@@ -125,7 +125,7 @@ export const TESTS = [
   {
     n: 'Christian Yeates',
     r: 'Owner, Green Triangle (UK)',
-    t: "Shaharyar's exceptional skills in full-stack development transformed our platform. His attention to detail, proactive communication, and ability to deliver complex features on schedule made him an invaluable partner.",
+    t: "Shaharyar Sahil's exceptional skills in full-stack development transformed our platform. His attention to detail, proactive communication, and ability to deliver complex features on schedule made him an invaluable partner.",
     av: 'CY',
     col: '#8b5cf6'
   },
