@@ -22,7 +22,8 @@ export const SKILLS = [
   { n: 'Azure', l: 72, c: 'DevOps', col: '#0078d4' },
   { n: 'Redux', l: 87, c: 'Frontend', col: '#764abc' },
   { n: 'PostgreSQL', l: 75, c: 'Database', col: '#336791' },
-  { n: 'HTML/CSS', l: 96, c: 'Frontend', col: '#e34c26' }
+  { n: 'HTML/CSS', l: 96, c: 'Frontend', col: '#e34c26' },
+  { n: 'WordPress', l: 80, c: 'CMS', col: '#21759b' }
 ];
 
 export const PROJECTS = [
@@ -70,11 +71,26 @@ export const PROJECTS = [
     i: '🏠',
     col: '#10b981',
     live:'https://www.order-cloud.co.uk/fatra'
+  },
+  {
+    t: 'Royal Movers Bahrain',
+    d: 'A professional website for a moving company in Bahrain, showcasing services, testimonials, and contact information.',
+    tech: ['WordPress', 'Elementor', 'SEO'],
+    i: '🚚',
+    col: '#ffc107',
+    live: 'https://royalmoversbahrain.com/'
 
   }
 ];
 
 export const EXP = [
+  {
+    r: 'WordPress Developer',
+    co: 'Freelance Projects',
+    p: '2025',
+    d: 'Mastered WordPress development, specializing in custom theme customization, page building with Elementor, and implementing advanced SEO strategies for client websites.',
+    tech: ['WordPress', 'Elementor', 'SEO', 'PHP']
+  },
   {
     r: 'Senior Full-Stack Developer',
     co: 'TechCorp Solutions',
@@ -109,7 +125,7 @@ export const TESTS = [
   {
     n: 'Christian Yeates',
     r: 'Owner, Green Triangle (UK)',
-    t: "Muhammad's exceptional skills in full-stack development transformed our platform. His attention to detail, proactive communication, and ability to deliver complex features on schedule made him an invaluable partner.",
+    t: "Shaharyar's exceptional skills in full-stack development transformed our platform. His attention to detail, proactive communication, and ability to deliver complex features on schedule made him an invaluable partner.",
     av: 'CY',
     col: '#8b5cf6'
   },
@@ -133,5 +149,12 @@ export const TESTS = [
     t: 'A rare combination of technical brilliance and great communication. They always explain complex concepts clearly and take complete ownership of their work.',
     av: 'MW',
     col: '#ec4899'
+  },
+  {
+    n: 'Muhammad Ismail',
+    r: 'Owner, Royal Movers Bahrain',
+    t: 'Shaharyar Sahil delivered an exceptional website for Royal Movers. His expertise in WordPress and SEO helped us establish a strong online presence. The project was completed on time and exceeded our expectations.',
+    av: 'IS',
+    col: '#ffc107'
   }
 ];
