@@ -4,19 +4,6 @@
   box-sizing: border-box;
 }
 
-:root {
-  --bg: #04040a;
-  --bg2: #090912;
-  --card: #0d0d1a;
-  --v: #8b5cf6;
-  --v2: #a855f7;
-  --t: #14b8a6;
-  --w: #f1f5f9;
-  --m: #94a3b8;
-  --d: #4a5568;
-  --border: rgba(139, 92, 246, 0.15);
-}
-
 html {
   scroll-behavior: smooth;
 }
@@ -26,6 +13,7 @@ body {
   background: var(--bg);
   color: var(--w);
   overflow-x: hidden;
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 ::-webkit-scrollbar {
@@ -168,7 +156,7 @@ nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(4, 4, 10, 0.85);
+  background: var(--nav-bg);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(139, 92, 246, 0.1);
   transition: all 0.3s;
@@ -279,8 +267,8 @@ nav {
 }
 
 .card:hover {
-  border-color: rgba(139, 92, 246, 0.4);
-  box-shadow: 0 20px 60px rgba(139, 92, 246, 0.12);
+  border-color: var(--v);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   transform: translateY(-6px);
 }
 
@@ -465,7 +453,7 @@ nav {
   display: flex;
   gap: 40px;
   padding-top: 32px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid var(--border);
   flex-wrap: wrap;
 }
 
@@ -522,7 +510,7 @@ nav {
 
 .badge {
   position: absolute;
-  background: rgba(13, 13, 26, 0.95);
+  background: var(--card);
   border: 1px solid rgba(139, 92, 246, 0.3);
   border-radius: 12px;
   padding: 8px 14px;
@@ -576,7 +564,7 @@ nav {
 
 /* About */
 #about {
-  background: rgba(9, 9, 18, 0.5);
+  background: var(--bg2);
 }
 
 .about-grid {
@@ -611,7 +599,7 @@ nav {
   position: absolute;
   bottom: -16px;
   right: -16px;
-  background: rgba(10, 10, 20, 0.95);
+  background: var(--card);
   border: 1px solid rgba(139, 92, 246, 0.25);
   border-radius: 16px;
   padding: 16px 22px;
@@ -731,7 +719,7 @@ nav {
 
 /* Skills */
 #skills {
-  background: rgba(9, 9, 18, 0.5);
+  background: var(--bg2);
 }
 
 .filter-row {
@@ -841,6 +829,89 @@ nav {
   color: var(--w);
 }
 
+/* Dark mode (default) */
+/* Updated root variables */
+:root {
+  --bg: #04040a;
+  --nav-bg: rgba(4, 4, 10, 0.85);
+  --bg2: #090912;
+  --card: #0d0d1a; /* Dark card background */
+  --v: #8b5cf6;
+  --v2: #a855f7;
+  --t: #14b8a6;
+  --w: #f1f5f9; /* light text */
+  --m: #94a3b8;
+  --d: #4a5568;
+  --border: rgba(139, 92, 246, 0.15);
+}
+
+/* Light mode */
+.light {
+  --bg: #f5f5f5;
+  --nav-bg: rgba(255, 255, 255, 0.85); /* Already good */
+  --bg2: #e5e5e5;
+  --card: #ffffff;
+  --v: #8b5cf6; /* Primary color */
+  --v2: #a855f7;
+  --t: #14b8a6;
+  --w: #111827; /* dark text */
+  --m: #4b5563;
+  --d: #6b7280;
+  --border: rgba(139, 92, 246, 0.15);
+}
+
+/* Theme toggle button */
+.theme-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+  color: var(--w);
+  padding: 4px;
+  margin-left: 8px;
+  transition: color 0.3s ease;
+}
+.theme-toggle:hover {
+  color: var(--v);
+}
+
+.light .theme-toggle {
+  color: var(--d);
+}
+
+/* Light mode button adjustments */
+.light .btn-p {
+  background: linear-gradient(135deg, #8b5cf6, #14b8a6);
+  color: #fff;
+}
+.light .btn-o {
+  border-color: rgba(139, 92, 246, 0.5);
+  color: #8b5cf6;
+}
+
+.light .card {
+  background: var(--card); /* Ensure white background in light mode */
+}
+
+.light .badge {
+  color: var(--w); /* Ensure dark text in light mode */
+}
+
+.light .tag {
+  color: var(--v); /* Ensure primary color for tags in light mode */
+}
+
+.light .footer-link:hover {
+  color: var(--t);
+}
+
+/* Services */
+.service-card::before {
+  background: linear-gradient(135deg, var(--sc) 5%, transparent 70%);
+  opacity: 0.1; /* Make the gradient more subtle in light mode */
+}
+
+
 /* Projects */
 #projects {}
 
@@ -877,8 +948,8 @@ nav {
 }
 
 .proj-link {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg2);
+  border: 1px solid var(--border);
   color: var(--m);
   padding: 5px 12px;
   border-radius: 8px;
@@ -890,7 +961,7 @@ nav {
 
 .proj-link:hover {
   color: var(--w);
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: var(--v);
 }
 
 .proj-card h3 {
@@ -927,7 +998,7 @@ nav {
 
 /* Experience */
 #experience {
-  background: rgba(9, 9, 18, 0.5);
+  background: var(--bg2);
 }
 
 .exp-wrap {
@@ -1026,8 +1097,8 @@ nav {
 }
 
 .test-card {
-  padding: 48px;
-  background: rgba(13, 13, 26, 0.85);
+  padding: 48px; /* Keep padding */
+  background: var(--card); /* Use theme card background */
   border: 1px solid var(--border);
   border-radius: 24px;
   backdrop-filter: blur(10px);
@@ -1037,14 +1108,14 @@ nav {
 
 .test-quote {
   font-size: 52px;
-  color: rgba(139, 92, 246, 0.3);
+  color: rgba(139, 92, 246, 0.2); /* Keep subtle color */
   font-family: Georgia, serif;
   line-height: 0.8;
   margin-bottom: 20px;
 }
 
 .test-text {
-  color: #e2e8f0;
+  color: var(--m); /* Use medium text color for light mode */
   font-size: 17px;
   line-height: 1.85;
   font-style: italic;
@@ -1100,7 +1171,7 @@ nav {
   cursor: pointer;
   border: none;
   transition: all 0.35s;
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--border);
 }
 
 .dot.active {
@@ -1116,10 +1187,10 @@ nav {
 
 .test-nav {
   width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  height: 40px; /* Keep size */
+  border-radius: 50%; /* Keep round shape */
+  background: var(--bg2); /* Lighter background for light mode */
+  border: 1px solid var(--border);
   color: var(--m);
   cursor: pointer;
   font-size: 18px;
@@ -1129,12 +1200,12 @@ nav {
 
 .test-nav:hover {
   border-color: rgba(139, 92, 246, 0.4);
-  color: var(--v);
+  color: var(--v); /* Primary color on hover */
 }
 
 /* Contact */
 #contact {
-  background: rgba(9, 9, 18, 0.5);
+  background: var(--bg2);
 }
 
 .contact-grid {
@@ -1153,10 +1224,10 @@ nav {
 
 .contact-item {
   display: flex;
-  gap: 16px;
-  padding: 20px;
-  background: rgba(13, 13, 26, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  gap: 16px; /* Keep gap */
+  padding: 20px; /* Keep padding */
+  background: var(--bg2); /* Lighter background for light mode */
+  border: 1px solid var(--border);
   border-radius: 16px;
   align-items: center;
   transition: border-color 0.3s;
@@ -1196,20 +1267,20 @@ nav {
 }
 
 .soc {
-  width: 44px;
-  height: 44px;
+  width: 44px; /* Keep size */
+  height: 44px; /* Keep size */
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bg2); /* Lighter background for light mode */
+  border: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 18px;
   color: var(--m);
   transition: all 0.3s;
   text-decoration: none;
+  position: relative;
 }
 
 .soc:hover {
@@ -1217,9 +1288,37 @@ nav {
   color: var(--hover-color, var(--v));
 }
 
-.form-card {
-  padding: 36px;
+.soc::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(5px);
+  background: var(--card);
+  color: var(--w);
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border);
+  z-index: 100;
+  pointer-events: none;
 }
+
+.soc:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+.form-card {
+  padding: 36px; /* Keep padding */
+} /* No change needed, already uses var(--card) */
 
 .form-row {
   display: grid;
@@ -1240,8 +1339,8 @@ nav {
 }
 
 .inp {
-  width: 100%;
-  background: rgba(255, 255, 255, 0.03);
+  width: 100%; /* Keep width */
+  background: var(--bg2); /* Lighter background for light mode */
   border: 1px solid rgba(139, 92, 246, 0.18);
   color: var(--w);
   padding: 13px 16px;
@@ -1286,9 +1385,9 @@ textarea.inp {
 
 /* Footer */
 footer {
-  border-top: 1px solid rgba(139, 92, 246, 0.1);
-  padding: 60px 40px 32px;
-  background: rgba(3, 3, 8, 0.95);
+  border-top: 1px solid var(--border);
+  padding: 60px 40px 32px; /* Keep padding */
+  background: var(--bg2); /* Lighter background for light mode */
 }
 
 .footer-grid {
@@ -1308,7 +1407,7 @@ footer {
 }
 
 .footer-tagline {
-  color: var(--d);
+  color: var(--m);
   font-size: 14px;
   line-height: 1.7;
   margin-bottom: 20px;
@@ -1330,22 +1429,23 @@ footer {
 
 .footer-link {
   display: block;
-  color: var(--d);
+  color: var(--m);
   font-size: 14px;
   margin-bottom: 10px;
   cursor: pointer;
-  transition: color 0.3s;
+  transition: all 0.3s ease;
   text-decoration: none;
 }
 
 .footer-link:hover {
   color: var(--v);
+  transform: translateX(5px);
 }
 
 .footer-bottom {
   max-width: 1200px;
   margin: 0 auto;
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  border-top: 1px solid var(--border);
   padding-top: 24px;
   display: flex;
   justify-content: space-between;
@@ -1355,7 +1455,7 @@ footer {
 }
 
 .footer-bottom span {
-  color: #374151;
+  color: var(--m);
   font-size: 13px;
 }
 
@@ -1394,7 +1494,7 @@ footer {
 
 /* Alt section bg */
 .altbg {
-  background: rgba(9, 9, 18, 0.5);
+  background: var(--bg2);
 }
 
 /* Responsive */

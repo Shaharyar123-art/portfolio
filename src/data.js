@@ -3,7 +3,79 @@ export const ROLES = [
   'React Specialist',
   'Angular Expert',
   '.NET Core Engineer',
-  'Mobile Developer'
+  'Mobile Developer',
+  'Performance Marketing Specialist'
+];
+
+export const MARKETING_SERVICES = [
+  {
+    platform: 'Google Ads',
+    icon: '🔍',
+    color: '#4285f4',
+    gradient: 'linear-gradient(135deg, #4285f4, #34a853)',
+    tagline: 'Maximize ROI with precision-targeted campaigns',
+    description: 'I create and manage high-performance Google Ads campaigns that drive qualified traffic, boost conversions, and deliver measurable results for your business.',
+    features: [
+      { title: 'Search Campaigns', desc: 'Keyword-targeted ads on Google Search results', icon: '🎯' },
+      { title: 'Display Network', desc: 'Visual banner ads across millions of websites', icon: '🖼️' },
+      { title: 'Shopping Campaigns', desc: 'Product listing ads for e-commerce stores', icon: '🛍️' },
+      { title: 'YouTube Video Ads', desc: 'Engaging video campaigns on YouTube', icon: '▶️' },
+      { title: 'Remarketing', desc: 'Re-engage visitors who left without converting', icon: '🔄' },
+      { title: 'Performance Max', desc: 'AI-powered campaigns across all Google channels', icon: '⚡' }
+    ],
+    stats: [
+      { value: '300%', label: 'Avg. ROAS' },
+      { value: '45%', label: 'Lower CPC' },
+      { value: '2.5x', label: 'Conv. Rate' }
+    ]
+  },
+  {
+    platform: 'Facebook & Instagram Ads',
+    icon: '📘',
+    color: '#1877f2',
+    gradient: 'linear-gradient(135deg, #1877f2, #e1306c)',
+    tagline: 'Reach your ideal audience on social media',
+    description: 'I leverage Facebook Ads Manager to create compelling ad campaigns across Facebook and Instagram that build brand awareness, generate leads, and drive sales.',
+    features: [
+      { title: 'Lead Generation', desc: 'Capture qualified leads with optimized forms', icon: '📋' },
+      { title: 'Brand Awareness', desc: 'Increase visibility and reach new audiences', icon: '📢' },
+      { title: 'Conversion Campaigns', desc: 'Drive purchases and sign-ups on your website', icon: '💰' },
+      { title: 'Retargeting', desc: 'Target warm audiences with custom segments', icon: '🎯' },
+      { title: 'Lookalike Audiences', desc: 'Find new customers similar to your best ones', icon: '👥' },
+      { title: 'A/B Testing', desc: 'Data-driven creative and audience optimization', icon: '📊' }
+    ],
+    stats: [
+      { value: '10M+', label: 'Ad Reach' },
+      { value: '60%', label: 'Lower CPL' },
+      { value: '4.2x', label: 'ROAS' }
+    ]
+  },
+  {
+    platform: 'LinkedIn Ads',
+    icon: '💼',
+    color: '#0077b5',
+    gradient: 'linear-gradient(135deg, #0077b5, #0a66c2)',
+    tagline: 'Professional B2B lead generation on LinkedIn',
+    description: 'I design and manage LinkedIn ad campaigns that target professionals and businesses, driving high-quality leads and brand authority in the B2B space.',
+    features: [
+      { title: 'Sponsored Content', desc: 'Promoted posts in LinkedIn feed', icon: '📄' },
+      { title: 'Message Ads', desc: 'Direct InMail messages to target audience', icon: '✉️' },
+      { title: 'Lead Gen Forms', desc: 'Pre-filled forms for easy lead capture', icon: '📝' },
+      { title: 'Dynamic Ads', desc: 'Personalized ads with member profiles', icon: '⚙️' }
+    ],
+    stats: [
+      { value: '5M+', label: 'Impressions' },
+      { value: '30%', label: 'Lead Conversion' },
+      { value: '3x', label: 'ROAS' }
+    ]
+  }
+];
+
+export const MARKETING_PROCESS = [
+  { step: '01', title: 'Audit & Strategy', desc: 'Deep analysis of your business, competitors, and market to craft a winning strategy.', icon: '🔬' },
+  { step: '02', title: 'Campaign Setup', desc: 'Precise targeting, compelling ad creatives, and optimized landing pages.', icon: '🛠️' },
+  { step: '03', title: 'Launch & Monitor', desc: 'Campaign launch with real-time monitoring, bid management, and budget optimization.', icon: '🚀' },
+  { step: '04', title: 'Optimize & Scale', desc: 'Continuous A/B testing, performance analysis, and scaling winning campaigns.', icon: '📈' }
 ];
 
 export const SKILLS = [

@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { ROLES, SKILLS, PROJECTS, EXP, TESTS } from './data';
+import '@fortawesome/fontawesome-free/css/all.min.css';
+import { ROLES, SKILLS, PROJECTS, EXP, TESTS, MARKETING_SERVICES, MARKETING_PROCESS } from './data';
+
 import CV from './assets/CV.pdf';
 function App() {
   // --- States ---
@@ -16,7 +18,7 @@ function App() {
     message: ''
   });
   const [formSubmitted, setFormSubmitted] = useState(false);
-
+  const [theme, setTheme] = useState('dark');
   // --- Typing Effect ---
   useEffect(() => {
     let i = 0;
@@ -49,7 +51,7 @@ function App() {
       }
 
       // Check current visible section
-      const secs = ['home', 'about', 'services', 'skills', 'projects', 'experience', 'testimonials', 'contact'];
+      const secs = ['home', 'about', 'services', 'marketing', 'skills', 'projects', 'experience', 'testimonials', 'contact'];
       let cur = 'home';
       for (const id of secs) {
         const el = document.getElementById(id);
@@ -63,6 +65,16 @@ function App() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Apply theme class to root element
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'light') {
+      root.classList.add('light');
+    } else {
+      root.classList.remove('light');
+    }
+  }, [theme]);
 
   // --- Testimonial Slider Auto transition ---
   useEffect(() => {
@@ -143,7 +155,7 @@ function App() {
       <nav id="navbar">
         <a className="logo" onClick={() => scrollToSection('home')}>&lt;DevBySahil/&gt;</a>
         <div className="nav-links">
-          {['home', 'about', 'skills', 'projects', 'experience', 'testimonials', 'contact'].map((sec) => (
+          {['home', 'about', 'services', 'marketing', 'skills', 'projects', 'experience', 'testimonials', 'contact'].map((sec) => (
             <button
               key={sec}
               className={`nl ${activeSection === sec ? 'active' : ''}`}
@@ -159,6 +171,13 @@ function App() {
           >
             Hire Me
           </button>
+          <button
+            className="theme-toggle"
+            onClick={() => setTheme(prev => prev === 'dark' ? 'light' : 'dark')}
+            aria-label="Toggle light/dark mode"
+          >
+            <i className={theme === 'dark' ? 'fa-solid fa-moon' : 'fa-solid fa-sun'}></i>
+          </button>
         </div>
       </nav>
 
@@ -169,6 +188,7 @@ function App() {
         <div className="container">
           <div className="hero-grid">
             <div className="hero-left">
+              <br/>
               <div className="stag fadeUp">✦ Available for Work</div>
               <h1 className="syne fadeUp d1">Hi, I'm <span className="gtext">Shaharyar</span><br /></h1>
               <div className="hero-role fadeUp d2">
@@ -295,6 +315,49 @@ function App() {
           </div>
         </div>
       </section>
+
+{/* MARKETING */}
+<section id="marketing" className="sec">
+  <div className="orb" style={{ width: '500px', height: '500px', background: 'radial-gradient(circle,rgba(20,184,166,.12),transparent 70%)', right: '-150px', bottom: 0, filter: 'blur(80px)' }}></div>
+  <div className="container">
+    <div className="sec-head">
+      <div className="stag" style={{ margin: '0 auto 20px', display: 'table' }}>✦ Marketing</div>
+      <h2 className="syne">Performance <span className="gtext">Marketing</span></h2>
+      <p>I combine data-driven strategies with creative ad designs to deliver high‑ROI campaigns on Google and Facebook.</p>
+        <p>As a Performance Marketing Specialist, I craft tailored advertising solutions that boost brand visibility, drive qualified leads, and maximize return on ad spend across multiple platforms, including Google Ads, Facebook Ads, and emerging channels. My data‑first approach ensures continuous optimization and measurable results.</p>
+    </div>
+    <div className="services-grid">
+      {MARKETING_SERVICES.map((svc, i) => (
+        <div key={svc.platform} className="card service-card" style={{ '--sc': svc.color }}>
+          <div className="service-num">{String(i+1).padStart(2, '0')}</div>
+          <div className="service-icon">{svc.icon}</div>
+          <h3>{svc.platform}</h3>
+          <p>{svc.tagline}</p>
+          <ul style={{ color: 'var(--m)', fontSize: '14px', marginTop: '12px' }}>
+            {svc.features.map(f => (
+              <li key={f.title} style={{ marginBottom: '4px' }}>
+                <strong>{f.title}:</strong> {f.desc}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+    <div className="gridbg" style={{ marginTop: '48px' }}>
+      <h3 className="syne">My Process</h3>
+      <div className="skills-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
+        {MARKETING_PROCESS.map(step => (
+          <div key={step.step} className="card skill-card">
+            <div className="skill-top">
+              <div className="skill-name">{step.step} {step.title}</div>
+            </div>
+            <p className="skill-foot" style={{ color: 'var(--m)', fontSize: '14px' }}>{step.desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
 
       {/* SKILLS */}
       <section id="skills" className="sec altbg">
@@ -490,10 +553,10 @@ function App() {
                 </div>
               </div>
               <div className="socials">
-                <a className="soc" title="LinkedIn" style={{ '--hover-border': 'rgba(10,102,194,.5)', '--hover-color': '#0a66c2' }} href="https://www.linkedin.com/in/shaharyar-sahil-442b7b184/?skipRedirect=true" target="_blank" rel="noreferrer">in</a>
-                <a className="soc" title="GitHub" style={{ '--hover-border': 'rgba(255,255,255,.3)', '--hover-color': '#fff' }} href="https://github.com/Shaharyar123-art" target="_blank" rel="noreferrer">GH</a>
-                <a className="soc" title="Twitter/X" style={{ '--hover-border': 'rgba(29,161,242,.5)', '--hover-color': '#1da1f2' }} href="https://x.com/Shaharyar7008" target="_blank" rel="noreferrer">𝕏</a>
-                <a className="soc" title="WhatsApp" style={{ '--hover-border': 'rgba(37,211,102,.5)', '--hover-color': '#25d366' }} href="https://wa.me/923041137877" target="_blank" rel="noreferrer">WA</a>
+                <a className="soc" data-tooltip="LinkedIn" style={{ '--hover-border': 'rgba(10,102,194,.5)', '--hover-color': '#0a66c2' }} href="https://www.linkedin.com/in/shaharyar-sahil-442b7b184/?skipRedirect=true" target="_blank" rel="noreferrer"><i className="fa-brands fa-linkedin-in"></i></a>
+                <a className="soc" data-tooltip="GitHub" style={{ '--hover-border': 'rgba(255,255,255,.3)', '--hover-color': '#fff' }} href="https://github.com/Shaharyar123-art" target="_blank" rel="noreferrer"><i className="fa-brands fa-github"></i></a>
+                <a className="soc" data-tooltip="Twitter/X" style={{ '--hover-border': 'rgba(29,161,242,.5)', '--hover-color': '#1da1f2' }} href="https://x.com/Shaharyar7008" target="_blank" rel="noreferrer"><i className="fa-brands fa-x-twitter"></i></a>
+                <a className="soc" data-tooltip="WhatsApp" style={{ '--hover-border': 'rgba(37,211,102,.5)', '--hover-color': '#25d366' }} href="https://wa.me/923041137877" target="_blank" rel="noreferrer"><i className="fa-brands fa-whatsapp"></i></a>
               </div>
             </div>
             <div className="card form-card">
@@ -565,10 +628,10 @@ function App() {
             <span className="logo syne" style={{ fontSize: '20px', fontWeight: 800, cursor: 'pointer' }} onClick={() => scrollToSection('home')}>&lt;DevBySahil/&gt;</span>
             <p className="footer-tagline">Building exceptional digital experiences with cutting-edge technologies.</p>
             <div className="footer-socials">
-              <a className="soc" href="https://www.linkedin.com/in/shaharyar-sahil-442b7b184/?skipRedirect=true" target="_blank" rel="noreferrer" style={{ '--hover-border': 'rgba(10,102,194,.5)', '--hover-color': '#0a66c2' }}>in</a>
-              <a className="soc" href="https://github.com/Shaharyar123-art" target="_blank" rel="noreferrer" style={{ '--hover-border': 'rgba(255,255,255,.3)', '--hover-color': '#fff' }}>GH</a>
-              <a className="soc" href="https://x.com/Shaharyar7008" target="_blank" rel="noreferrer" style={{ '--hover-border': 'rgba(29,161,242,.5)', '--hover-color': '#1da1f2' }}>𝕏</a>
-              <a className="soc" href="https://wa.me/923041137877" target="_blank" rel="noreferrer" style={{ '--hover-border': 'rgba(37,211,102,.5)', '--hover-color': '#25d366' }}>WA</a>
+              <a className="soc" data-tooltip="LinkedIn" href="https://www.linkedin.com/in/shaharyar-sahil-442b7b184/?skipRedirect=true" target="_blank" rel="noreferrer" style={{ '--hover-border': 'rgba(10,102,194,.5)', '--hover-color': '#0a66c2' }}><i className="fa-brands fa-linkedin-in"></i></a>
+              <a className="soc" data-tooltip="GitHub" href="https://github.com/Shaharyar123-art" target="_blank" rel="noreferrer" style={{ '--hover-border': 'rgba(255,255,255,.3)', '--hover-color': '#fff' }}><i className="fa-brands fa-github"></i></a>
+              <a className="soc" data-tooltip="Twitter/X" href="https://x.com/Shaharyar7008" target="_blank" rel="noreferrer" style={{ '--hover-border': 'rgba(29,161,242,.5)', '--hover-color': '#1da1f2' }}><i className="fa-brands fa-x-twitter"></i></a>
+              <a className="soc" data-tooltip="WhatsApp" href="https://wa.me/923041137877" target="_blank" rel="noreferrer" style={{ '--hover-border': 'rgba(37,211,102,.5)', '--hover-color': '#25d366' }}><i className="fa-brands fa-whatsapp"></i></a>
             </div>
           </div>
           <div className="footer-col">
