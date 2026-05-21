@@ -1496,6 +1496,15 @@ footer {
 .altbg {
   background: var(--bg2);
 }
+/* Stag active animation */
+.active-section .stag {
+  animation: stagPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes stagPop {
+  0% { opacity: 0; transform: scale(0.7); }
+  100% { opacity: 1; transform: scale(1); }
+}
 
 /* Responsive */
 @media(max-width: 900px) {

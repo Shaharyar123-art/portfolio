@@ -182,7 +182,7 @@ function App() {
       </nav>
 
       {/* HERO */}
-      <section id="home" className="sec gridbg">
+      <section id="home" className={`sec gridbg ${activeSection === 'home' ? 'active-section' : ''}`}>
         <div className="orb orb1"></div>
         <div className="orb orb2"></div>
         <div className="container">
@@ -229,7 +229,7 @@ function App() {
       </section>
 
       {/* ABOUT */}
-      <section id="about" className="sec altbg">
+      <section id="about" className={`sec altbg ${activeSection === 'about' ? 'active-section' : ''}`}>
         <div className="orb" style={{ width: '400px', height: '400px', background: 'radial-gradient(circle,rgba(20,184,166,.12),transparent 70%)', right: '-100px', top: 0, filter: 'blur(80px)' }}></div>
         <div className="container">
           <div className="about-grid">
@@ -267,7 +267,7 @@ function App() {
       </section>
 
       {/* SERVICES */}
-      <section id="services" className="sec">
+      <section id="services" className={`sec ${activeSection === 'services' ? 'active-section' : ''}`}>
         <div className="orb" style={{ width: '500px', height: '500px', background: 'radial-gradient(circle,rgba(139,92,246,.12),transparent 70%)', left: '-150px', bottom: 0, filter: 'blur(80px)' }}></div>
         <div className="container">
           <div className="sec-head">
@@ -317,7 +317,7 @@ function App() {
       </section>
 
 {/* MARKETING */}
-<section id="marketing" className="sec">
+<section id="marketing" className={`sec ${activeSection === 'marketing' ? 'active-section' : ''}`}>
   <div className="orb" style={{ width: '500px', height: '500px', background: 'radial-gradient(circle,rgba(20,184,166,.12),transparent 70%)', right: '-150px', bottom: 0, filter: 'blur(80px)' }}></div>
   <div className="container">
     <div className="sec-head">
@@ -360,7 +360,7 @@ function App() {
 </section>
 
       {/* SKILLS */}
-      <section id="skills" className="sec altbg">
+      <section id="skills" className={`sec altbg ${activeSection === 'skills' ? 'active-section' : ''}`}>
         <div className="orb" style={{ width: '500px', height: '500px', background: 'radial-gradient(circle,rgba(20,184,166,.12),transparent 70%)', right: '-100px', top: '50%', filter: 'blur(80px)' }}></div>
         <div className="container">
           <div className="sec-head">
@@ -412,7 +412,7 @@ function App() {
       </section>
 
       {/* PROJECTS */}
-      <section id="projects" className="sec">
+      <section id="projects" className={`sec ${activeSection === 'projects' ? 'active-section' : ''}`}>
         <div className="orb" style={{ width: '500px', height: '500px', background: 'radial-gradient(circle,rgba(139,92,246,.12),transparent 70%)', left: '30%', top: 0, filter: 'blur(80px)' }}></div>
         <div className="container">
           <div className="sec-head">
@@ -446,7 +446,7 @@ function App() {
       </section>
 
       {/* EXPERIENCE */}
-      <section id="experience" className="sec altbg">
+      <section id="experience" className={`sec altbg ${activeSection === 'experience' ? 'active-section' : ''}`}>
         <div className="orb" style={{ width: '400px', height: '400px', background: 'radial-gradient(circle,rgba(139,92,246,.12),transparent 70%)', left: '-100px', top: '20%', filter: 'blur(80px)' }}></div>
         <div className="container">
           <div className="sec-head">
@@ -482,7 +482,7 @@ function App() {
       </section>
 
       {/* TESTIMONIALS */}
-      <section id="testimonials" className="sec">
+      <section id="testimonials" className={`sec ${activeSection === 'testimonials' ? 'active-section' : ''}`}>
         <div className="orb" style={{ width: '500px', height: '500px', background: 'radial-gradient(circle,rgba(20,184,166,.1),transparent 70%)', right: 0, top: 0, filter: 'blur(80px)' }}></div>
         <div className="container">
           <div className="sec-head">
@@ -523,7 +523,7 @@ function App() {
       </section>
 
       {/* CONTACT */}
-      <section id="contact" className="sec altbg">
+      <section id="contact" className={`sec altbg ${activeSection === 'contact' ? 'active-section' : ''}`}>
         <div className="orb" style={{ width: '400px', height: '400px', background: 'radial-gradient(circle,rgba(20,184,166,.1),transparent 70%)', left: 0, top: '50%', filter: 'blur(80px)' }}></div>
         <div className="orb" style={{ width: '400px', height: '400px', background: 'radial-gradient(circle,rgba(139,92,246,.1),transparent 70%)', right: 0, bottom: 0, filter: 'blur(80px)' }}></div>
         <div className="container">
