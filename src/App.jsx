@@ -159,6 +159,7 @@ function App() {
             <button
               key={sec}
               className={`nl ${activeSection === sec ? 'active' : ''}`}
+              aria-label={`Scroll to ${sec}`}
               onClick={() => scrollToSection(sec)}
             >
               {sec.charAt(0).toUpperCase() + sec.slice(1)}
@@ -669,6 +670,17 @@ function App() {
       >
         ↑
       </button>
+
+      {/* Floating Contact Overlays */}
+      <a href="https://wa.me/923041137877" className="wa-float" target="_blank" rel="noreferrer" aria-label="Chat on WhatsApp">
+        <i className="fa-brands fa-whatsapp"></i>
+      </a>
+      <button onClick={openCV} className="edu-float" aria-label="View Resume">
+        <i className="fa-solid fa-graduation-cap"></i>
+      </button>
+      <a href="tel:+923140069007" className="call-float" aria-label="Call Me">
+        <i className="fa-solid fa-phone"></i>
+      </a>
     </>
   );
 }
