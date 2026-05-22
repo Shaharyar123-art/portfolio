@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import './index.css';
 import { ROLES, SKILLS, PROJECTS, EXP, TESTS, MARKETING_SERVICES, MARKETING_PROCESS } from './data';
 
 import CV from './assets/CV.pdf';
@@ -19,7 +20,12 @@ function App() {
   });
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [theme, setTheme] = useState('dark');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   // --- Typing Effect ---
+  const [hireTooltipVisible, setHireTooltipVisible] = useState(false);
+  const [waTooltipVisible, setWaTooltipVisible] = useState(false);
+  const [eduTooltipVisible, setEduTooltipVisible] = useState(false);
+  const [callTooltipVisible, setCallTooltipVisible] = useState(false);
   useEffect(() => {
     let i = 0;
     setTypedText('');
@@ -69,6 +75,12 @@ function App() {
   // Apply theme class to root element
   useEffect(() => {
     const root = document.documentElement;
+    
+    // Trigger brightness flash animation
+    root.classList.remove('flash-active');
+    void root.offsetWidth; // Trigger reflow to restart animation
+    root.classList.add('flash-active');
+
     if (theme === 'light') {
       root.classList.add('light');
     } else {
@@ -91,6 +103,7 @@ function App() {
       el.scrollIntoView({ behavior: 'smooth' });
     }
     setActiveSection(id);
+    setIsSidebarOpen(false); // Close sidebar after clicking
   };
 
   // --- Form Handling ---
@@ -149,12 +162,64 @@ function App() {
  const openCV = () => {
     window.open(CV, '_blank');
   };
+
+  // --- Long-press Tooltip Logic ---
+  const longPressDuration = 700; // milliseconds
+  let hirePressTimer = null;
+  let waPressTimer = null;
+  let eduPressTimer = null;
+  let callPressTimer = null;
+
+  const handleTouchStart = (setter, timerRef) => {
+    timerRef.current = setTimeout(() => {
+      setter(true);
+    }, longPressDuration);
+  };
+
+  const handleTouchEnd = (setter, timerRef) => {
+    clearTimeout(timerRef.current);
+    setter(false);
+  };
+
+  // Hire Me
+  const handleHireTouchStart = () => handleTouchStart(setHireTooltipVisible, { current: hirePressTimer });
+  const handleHireTouchEnd = () => handleTouchEnd(setHireTooltipVisible, { current: hirePressTimer });
+
+  // WhatsApp
+  const handleWaTouchStart = () => handleTouchStart(setWaTooltipVisible, { current: waPressTimer });
+  const handleWaTouchEnd = () => handleTouchEnd(setWaTooltipVisible, { current: waPressTimer });
+
+  // Education
+  const handleEduTouchStart = () => handleTouchStart(setEduTooltipVisible, { current: eduPressTimer });
+  const handleEduTouchEnd = () => handleTouchEnd(setEduTooltipVisible, { current: eduPressTimer });
+
+  // Call
+  const handleCallTouchStart = () => handleTouchStart(setCallTooltipVisible, { current: callPressTimer });
+  const handleCallTouchEnd = () => handleTouchEnd(setCallTooltipVisible, { current: callPressTimer });
+
+  // Clear timers on unmount (important for cleanup)
+  useEffect(() => {
+    return () => {
+      clearTimeout(hirePressTimer);
+      clearTimeout(waPressTimer);
+      clearTimeout(eduPressTimer);
+      clearTimeout(callPressTimer);
+    };
+  }, []);
+
   return (
     <>
       {/* NAVBAR */}
       <nav id="navbar">
         <a className="logo" onClick={() => scrollToSection('home')}>&lt;DevBySahil/&gt;</a>
         <div className="nav-links">
+          <button
+            className="hamburger" 
+            onClick={() => setIsSidebarOpen(true)}
+            aria-label="Open Menu"
+          >
+            <i className="fa-solid fa-bars-staggered"></i>
+          </button>
           {['home', 'about', 'services', 'marketing', 'skills', 'projects', 'experience', 'testimonials', 'contact'].map((sec) => (
             <button
               key={sec}
@@ -165,9 +230,8 @@ function App() {
               {sec.charAt(0).toUpperCase() + sec.slice(1)}
             </button>
           ))}
-          <button 
-            className="btn-p" 
-            style={{ padding: '10px 22px', fontSize: '13px' }} 
+          <button
+            className="btn-p nav-hire" 
             onClick={() => scrollToSection('contact')}
           >
             Hire Me
@@ -182,6 +246,35 @@ function App() {
         </div>
       </nav>
 
+      {/* MOBILE SIDEBAR */}
+      <div className={`sidebar-overlay ${isSidebarOpen ? 'show' : ''}`} onClick={() => setIsSidebarOpen(false)}></div>
+      <aside className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
+        <div className="sidebar-head">
+          <span className="logo">&lt;DevBySahil/&gt;</span>
+          <button className="close-sidebar" onClick={() => setIsSidebarOpen(false)}>
+            <i className="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div className="sidebar-links">
+          {['home', 'about', 'services', 'marketing', 'skills', 'projects', 'experience', 'testimonials', 'contact'].map((sec, i) => (
+            <button
+              key={sec}
+              className={`sl ${activeSection === sec ? 'active' : ''}`}
+              style={{ transitionDelay: `${i * 50}ms` }}
+              onClick={() => scrollToSection(sec)}
+            >
+              {/* <span className="sl-num"></span> */}
+              {sec.charAt(0).toUpperCase() + sec.slice(1)}
+            </button>
+          ))}
+        </div>
+        <div className="sidebar-footer">
+          <button className="btn-p" style={{ width: '100%' }} onClick={() => scrollToSection('contact')}>
+            Hire Me Now
+          </button>
+        </div>
+      </aside>
+
       {/* HERO */}
       <section id="home" className={`sec gridbg ${activeSection === 'home' ? 'active-section' : ''}`}>
         <div className="orb orb1"></div>
@@ -189,7 +282,6 @@ function App() {
         <div className="container">
           <div className="hero-grid">
             <div className="hero-left">
-              <br/>
               <div className="stag fadeUp">✦ Available for Work</div>
               <h1 className="syne fadeUp d1">Hi, I'm <span className="gtext">Shaharyar</span><br /></h1>
               <div className="hero-role fadeUp d2">
@@ -671,14 +763,19 @@ function App() {
         ↑
       </button>
 
+      {/* Floating Hire Me (Mobile Only) */}
+      <button className="btn-p hire-float" onClick={() => scrollToSection('contact')} aria-label="Hire Me">
+        <i className="fa-solid fa-briefcase"></i>
+      </button>
+
       {/* Floating Contact Overlays */}
       <a href="https://wa.me/923041137877" className="wa-float" target="_blank" rel="noreferrer" aria-label="Chat on WhatsApp">
         <i className="fa-brands fa-whatsapp"></i>
       </a>
-      <button onClick={openCV} className="edu-float" aria-label="View Resume">
+      <button onClick={openCV} className={`edu-float ${showBackToTop ? 'shifted' : ''}`} aria-label="View Resume">
         <i className="fa-solid fa-graduation-cap"></i>
       </button>
-      <a href="tel:+923140069007" className="call-float" aria-label="Call Me">
+      <a href="tel:+923140069007" className={`call-float ${showBackToTop ? 'shifted' : ''}`} aria-label="Call Me">
         <i className="fa-solid fa-phone"></i>
       </a>
     </>
