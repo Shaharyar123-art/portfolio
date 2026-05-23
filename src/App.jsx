@@ -9,6 +9,7 @@ import { EASE_PREMIUM, springTransition, staggerContainer, fadeInUp, fadeInDown,
 import Magnetic from './components/Magnetic';
 import TiltCard from './components/TiltCard';
 import MouseGlow from './components/MouseGlow';
+import CustomCursor from './components/CustomCursor';
 
 const SECTIONS = [
   { id: 'home', label: 'Home' },
@@ -200,6 +201,7 @@ function App() {
     <>
       {/* Ambient background mouse follow glow (Desktop only) */}
       <MouseGlow />
+      <CustomCursor />
 
       {/* NAVBAR */}
       <nav id="navbar">
@@ -217,6 +219,7 @@ function App() {
               key={sec}
               className={`nl ${activeSection === sec ? 'active' : ''}`}
               aria-label={`Scroll to ${sec}`}
+              data-cursor="pointer"
               onClick={() => scrollToSection(sec)}
             >
               {sec.charAt(0).toUpperCase() + sec.slice(1)}

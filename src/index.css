@@ -15,7 +15,18 @@ body {
   color: var(--w);
   overflow-x: hidden;
   position: relative;
+  cursor: none;
   transition: background 0.6s cubic-bezier(0.4, 0, 0.2, 1), color 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (max-width: 900px) {
+  body {
+    cursor: auto;
+  }
+}
+
+a, button, .filt, .sl, .soc, .nl, .logo {
+  cursor: none;
 }
 
 /* Premium Noise overlay */
