@@ -1,9 +1,27 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import './index.css';
 import { ROLES, SKILLS, PROJECTS, EXP, TESTS, MARKETING_SERVICES, MARKETING_PROCESS } from './data';
 
 import CV from './assets/CV.pdf';
+import { EASE_PREMIUM, springTransition, staggerContainer, fadeInUp, fadeInDown, fadeInLeft, fadeInRight, fadeIn } from './components/animations';
+import Magnetic from './components/Magnetic';
+import TiltCard from './components/TiltCard';
+import MouseGlow from './components/MouseGlow';
+
+const SECTIONS = [
+  { id: 'home', label: 'Home' },
+  { id: 'about', label: 'About' },
+  { id: 'services', label: 'Services' },
+  { id: 'marketing', label: 'Marketing' },
+  { id: 'skills', label: 'Skills' },
+  { id: 'projects', label: 'Projects' },
+  { id: 'experience', label: 'Experience' },
+  { id: 'testimonials', label: 'Say' },
+  { id: 'contact', label: 'Contact' }
+];
+
 function App() {
   // --- States ---
   const [typedText, setTypedText] = useState('');
@@ -18,14 +36,17 @@ function App() {
     subject: '',
     message: ''
   });
+  const [formActive, setFormActive] = useState({
+    name: false,
+    email: false,
+    subject: false,
+    message: false
+  });
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [theme, setTheme] = useState('dark');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   // --- Typing Effect ---
-  const [hireTooltipVisible, setHireTooltipVisible] = useState(false);
-  const [waTooltipVisible, setWaTooltipVisible] = useState(false);
-  const [eduTooltipVisible, setEduTooltipVisible] = useState(false);
-  const [callTooltipVisible, setCallTooltipVisible] = useState(false);
   useEffect(() => {
     let i = 0;
     setTypedText('');
@@ -41,44 +62,56 @@ function App() {
         }, 2400);
         return () => clearTimeout(timeout);
       }
-    }, 75);
+    }, 70);
     
     return () => clearInterval(interval);
   }, [roleIndex]);
 
-  // --- Scroll Effect (Active Navigation & Back To Top) ---
+  // --- Performance Scroll Tracker for Back To Top ---
   useEffect(() => {
     const handleScroll = () => {
-      // Toggle back to top button
-      if (window.scrollY > 400) {
-        setShowBackToTop(true);
-      } else {
-        setShowBackToTop(false);
-      }
+      setShowBackToTop(window.scrollY > 400);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
-      // Check current visible section
-      const secs = ['home', 'about', 'services', 'marketing', 'skills', 'projects', 'experience', 'testimonials', 'contact'];
-      let cur = 'home';
-      for (const id of secs) {
-        const el = document.getElementById(id);
-        if (el && window.scrollY >= el.offsetTop - 120) {
-          cur = id;
-        }
-      }
-      setActiveSection(cur);
+  // --- Active Section Tracking via Intersection Observer ---
+  useEffect(() => {
+    const observerOptions = {
+      root: null,
+      rootMargin: '-30% 0px -60% 0px', 
+      threshold: 0
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const observerCallback = (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActiveSection(entry.target.id);
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+    
+    SECTIONS.forEach((section) => {
+      const el = document.getElementById(section.id);
+      if (el) observer.observe(el);
+    });
+
+    return () => {
+      SECTIONS.forEach((section) => {
+        const el = document.getElementById(section.id);
+        if (el) observer.unobserve(el);
+      });
+    };
   }, []);
 
   // Apply theme class to root element
   useEffect(() => {
     const root = document.documentElement;
-    
-    // Trigger brightness flash animation
     root.classList.remove('flash-active');
-    void root.offsetWidth; // Trigger reflow to restart animation
+    void root.offsetWidth; // Force reflow
     root.classList.add('flash-active');
 
     if (theme === 'light') {
@@ -92,7 +125,7 @@ function App() {
   useEffect(() => {
     const interval = setInterval(() => {
       setTestIndex((prev) => (prev + 1) % TESTS.length);
-    }, 5500);
+    }, 6000);
     return () => clearInterval(interval);
   }, [testIndex]);
 
@@ -103,7 +136,7 @@ function App() {
       el.scrollIntoView({ behavior: 'smooth' });
     }
     setActiveSection(id);
-    setIsSidebarOpen(false); // Close sidebar after clicking
+    setIsSidebarOpen(false); // Close sidebar
   };
 
   // --- Form Handling ---
@@ -129,7 +162,6 @@ function App() {
     }
 
     try {
-     
       const response = await fetch('https://formspree.io/f/xbdbdeeg', {
         method: 'POST',
         headers: {
@@ -159,56 +191,16 @@ function App() {
     : SKILLS.filter(s => s.c === activeCat);
 
   const currentTestimonial = TESTS[testIndex];
- const openCV = () => {
+  
+  const openCV = () => {
     window.open(CV, '_blank');
   };
 
-  // --- Long-press Tooltip Logic ---
-  const longPressDuration = 700; // milliseconds
-  let hirePressTimer = null;
-  let waPressTimer = null;
-  let eduPressTimer = null;
-  let callPressTimer = null;
-
-  const handleTouchStart = (setter, timerRef) => {
-    timerRef.current = setTimeout(() => {
-      setter(true);
-    }, longPressDuration);
-  };
-
-  const handleTouchEnd = (setter, timerRef) => {
-    clearTimeout(timerRef.current);
-    setter(false);
-  };
-
-  // Hire Me
-  const handleHireTouchStart = () => handleTouchStart(setHireTooltipVisible, { current: hirePressTimer });
-  const handleHireTouchEnd = () => handleTouchEnd(setHireTooltipVisible, { current: hirePressTimer });
-
-  // WhatsApp
-  const handleWaTouchStart = () => handleTouchStart(setWaTooltipVisible, { current: waPressTimer });
-  const handleWaTouchEnd = () => handleTouchEnd(setWaTooltipVisible, { current: waPressTimer });
-
-  // Education
-  const handleEduTouchStart = () => handleTouchStart(setEduTooltipVisible, { current: eduPressTimer });
-  const handleEduTouchEnd = () => handleTouchEnd(setEduTooltipVisible, { current: eduPressTimer });
-
-  // Call
-  const handleCallTouchStart = () => handleTouchStart(setCallTooltipVisible, { current: callPressTimer });
-  const handleCallTouchEnd = () => handleTouchEnd(setCallTooltipVisible, { current: callPressTimer });
-
-  // Clear timers on unmount (important for cleanup)
-  useEffect(() => {
-    return () => {
-      clearTimeout(hirePressTimer);
-      clearTimeout(waPressTimer);
-      clearTimeout(eduPressTimer);
-      clearTimeout(callPressTimer);
-    };
-  }, []);
-
   return (
     <>
+      {/* Ambient background mouse follow glow (Desktop only) */}
+      <MouseGlow />
+
       {/* NAVBAR */}
       <nav id="navbar">
         <a className="logo" onClick={() => scrollToSection('home')}>&lt;DevBySahil/&gt;</a>
@@ -246,94 +238,183 @@ function App() {
         </div>
       </nav>
 
-      {/* MOBILE SIDEBAR */}
-      <div className={`sidebar-overlay ${isSidebarOpen ? 'show' : ''}`} onClick={() => setIsSidebarOpen(false)}></div>
-      <aside className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
-        <div className="sidebar-head">
-          <span className="logo">&lt;DevBySahil/&gt;</span>
-          <button className="close-sidebar" onClick={() => setIsSidebarOpen(false)}>
-            <i className="fa-solid fa-xmark"></i>
-          </button>
-        </div>
-        <div className="sidebar-links">
-          {['home', 'about', 'services', 'marketing', 'skills', 'projects', 'experience', 'testimonials', 'contact'].map((sec, i) => (
-            <button
-              key={sec}
-              className={`sl ${activeSection === sec ? 'active' : ''}`}
-              style={{ transitionDelay: `${i * 50}ms` }}
-              onClick={() => scrollToSection(sec)}
+      {/* MOBILE SIDEBAR WITH ANIMATEPRESENCE */}
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <>
+            <motion.div 
+              className="sidebar-overlay show"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              onClick={() => setIsSidebarOpen(false)}
+              style={{ display: 'block' }}
+            />
+            
+            <motion.aside 
+              className="sidebar open"
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', stiffness: 280, damping: 30 }}
             >
-              {/* <span className="sl-num"></span> */}
-              {sec.charAt(0).toUpperCase() + sec.slice(1)}
-            </button>
-          ))}
-        </div>
-        <div className="sidebar-footer">
-          <button className="btn-p" style={{ width: '100%' }} onClick={() => scrollToSection('contact')}>
-            Hire Me Now
-          </button>
-        </div>
-      </aside>
+              <div className="sidebar-head">
+                <span className="logo">&lt;DevBySahil/&gt;</span>
+                <button className="close-sidebar" onClick={() => setIsSidebarOpen(false)}>
+                  <i className="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+              
+              <motion.div 
+                className="sidebar-links"
+                variants={staggerContainer(0.08, 0.1)}
+                initial="hidden"
+                animate="show"
+              >
+                {SECTIONS.map((sec) => (
+                  <motion.button
+                    key={sec.id}
+                    variants={fadeInRight}
+                    className={`sl ${activeSection === sec.id ? 'active' : ''}`}
+                    onClick={() => scrollToSection(sec.id)}
+                  >
+                    {sec.label}
+                  </motion.button>
+                ))}
+              </motion.div>
+              
+              <div className="sidebar-footer">
+                <button className="btn-p" style={{ width: '100%' }} onClick={() => scrollToSection('contact')}>
+                  Hire Me Now
+                </button>
+              </div>
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
 
-      {/* HERO */}
+      {/* HERO SECTION */}
       <section id="home" className={`sec gridbg ${activeSection === 'home' ? 'active-section' : ''}`}>
         <div className="orb orb1"></div>
         <div className="orb orb2"></div>
+        
         <div className="container">
-          <div className="hero-grid">
+          <motion.div 
+            className="hero-grid"
+            variants={staggerContainer(0.12, 0.25)}
+            initial="hidden"
+            animate="show"
+          >
             <div className="hero-left">
-              <div className="stag fadeUp">✦ Available for Work</div>
-              <h1 className="syne fadeUp d1">Hi, I'm <span className="gtext">Shaharyar</span><br /></h1>
-              <div className="hero-role fadeUp d2">
+              <motion.div variants={fadeInUp} className="stag">
+                <span className="pulse-dot" style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: '#10b981', marginRight: 8, boxShadow: '0 0 8px #10b981' }}></span>
+                Available for Work
+              </motion.div>
+              
+              <motion.h1 variants={fadeInUp} className="syne">
+                Hi, I'm <span className="gtext">Shaharyar</span>
+              </motion.h1>
+              
+              <motion.div variants={fadeInUp} className="hero-role">
                 <span className="prefix">I'm a </span>
                 <span className="typed">{typedText}</span>
                 <span className="cursor"></span>
-              </div>
-              <p className="hero-desc fadeUp d3">
-                Passionate full-stack developer specializing in React, Angular, React Native, Next.js, and ASP.NET Core. I craft scalable, high-performance applications that solve real business problems.
-              </p>
-              <div className="hero-btns fadeUp d4">
-                <button className="btn-p" onClick={() => scrollToSection('projects')}>View My Work</button>
-                <button className="btn-o" onClick={() => scrollToSection('contact')}>Get In Touch</button>
-              </div>
-              <div className="hero-stats fadeUp d4">
+              </motion.div>
+              
+              <motion.p variants={fadeInUp} className="hero-desc">
+                Passionate full-stack developer specializing in React, Angular, React Native, Next.js, and ASP.NET Core. I craft scalable, high-performance applications that solve real-world problems with premium aesthetics.
+              </motion.p>
+              
+              <motion.div variants={fadeInUp} className="hero-btns" style={{ display: 'flex', gap: 16 }}>
+                <Magnetic strength={0.15}>
+                  <button className="btn-p" onClick={() => scrollToSection('projects')}>View My Work</button>
+                </Magnetic>
+                <Magnetic strength={0.15}>
+                  <button className="btn-o" onClick={() => scrollToSection('contact')}>Get In Touch</button>
+                </Magnetic>
+              </motion.div>
+              
+              <motion.div variants={fadeInUp} className="hero-stats">
                 <div><div className="stat-v">6+</div><div className="stat-l">Years Experience</div></div>
                 <div><div className="stat-v">50+</div><div className="stat-l">Projects Completed</div></div>
                 <div><div className="stat-v">30+</div><div className="stat-l">Happy Clients</div></div>
                 <div><div className="stat-v">5</div><div className="stat-l">Tech Stacks</div></div>
-              </div>
+              </motion.div>
             </div>
-            <div className="avatar-wrap float fadeUp d3">
+            
+            <motion.div 
+              variants={fadeInRight}
+              className="avatar-wrap"
+              style={{ display: 'block' }}
+            >
               <div className="avatar-ring">
                 <div className="orbit"></div>
                 <div className="avatar-emoji">👨‍💻</div>
-                <div className="badge b1"><span>⚛️</span><span>React</span></div>
-                <div className="badge b2"><span>🅰️</span><span>Angular</span></div>
-                <div className="badge b3"><span>💜</span><span>.NET Core</span></div>
-                <div className="badge b4"><span>📱</span><span>Mobile</span></div>
+                
+                {/* Orbital tech badges with distinct slow breathing floats */}
+                <motion.div 
+                  className="badge b1"
+                  animate={{ y: [0, -10, 0] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                >
+                  <span>⚛️</span><span>React</span>
+                </motion.div>
+                <motion.div 
+                  className="badge b2"
+                  animate={{ y: [0, -14, 0] }}
+                  transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
+                >
+                  <span>🅰️</span><span>Angular</span>
+                </motion.div>
+                <motion.div 
+                  className="badge b3"
+                  animate={{ y: [0, -12, 0] }}
+                  transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+                >
+                  <span>💜</span><span>.NET Core</span>
+                </motion.div>
+                <motion.div 
+                  className="badge b4"
+                  animate={{ y: [0, -8, 0] }}
+                  transition={{ duration: 3.8, repeat: Infinity, ease: 'easeInOut', delay: 0.2 }}
+                >
+                  <span>📱</span><span>Mobile</span>
+                </motion.div>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
+        
         <div className="scroll-hint">
           <span>Scroll Down</span>
           <div className="scroll-line"></div>
         </div>
       </section>
 
-      {/* ABOUT */}
+      {/* ABOUT SECTION */}
       <section id="about" className={`sec altbg ${activeSection === 'about' ? 'active-section' : ''}`}>
-        <div className="orb" style={{ width: '400px', height: '400px', background: 'radial-gradient(circle,rgba(20,184,166,.12),transparent 70%)', right: '-100px', top: 0, filter: 'blur(80px)' }}></div>
         <div className="container">
-          <div className="about-grid">
-            <div style={{ position: 'relative' }}>
+          <motion.div 
+            className="about-grid"
+            variants={staggerContainer(0.12, 0.1)}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: '-20%' }}
+          >
+            <motion.div variants={fadeInLeft} style={{ position: 'relative' }}>
               <div className="about-img">👨‍💻</div>
-              <div className="about-card-stat">
+              <motion.div 
+                className="about-card-stat"
+                animate={{ y: [0, -6, 0] }}
+                transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+              >
                 <div className="about-stat-v">6+</div>
                 <div className="about-stat-l">Years of Experience</div>
-              </div>
-            </div>
-            <div>
+              </motion.div>
+            </motion.div>
+            
+            <motion.div variants={fadeInRight}>
               <div className="stag">✦ About Me</div>
               <h2 className="syne" style={{ fontSize: 'clamp(26px,4vw,46px)', fontWeight: 800, lineHeight: 1.2, marginBottom: '20px' }}>
                 Building <span className="gtext">Digital Solutions</span><br />That Truly Matter
@@ -344,216 +425,301 @@ function App() {
               <p style={{ color: 'var(--m)', lineHeight: 1.9, fontSize: '15px', marginBottom: '28px' }}>
                 My expertise spans the full stack — from crafting beautiful, responsive UIs with React, Angular, and Next.js to building robust, scalable backends with ASP.NET Core. I'm equally comfortable developing cross-platform mobile apps with React Native and designing clean REST APIs.
               </p>
+              
               <div className="about-meta">
                 <div className="meta-item"><span className="meta-icon">📍</span><div><div className="meta-label">Location</div><div className="meta-val">Kamalia, Pakistan</div></div></div>
                 <div className="meta-item"><span className="meta-icon">📧</span><div><div className="meta-label">Email</div><div className="meta-val">sshaharyar229@gmail.com</div></div></div>
                 <div className="meta-item"><span className="meta-icon">💼</span><div><div className="meta-label">Availability</div><div className="meta-val" style={{ color: '#14b8a6' }}>Open to Offers</div></div></div>
                 <div className="meta-item"><span className="meta-icon">🎓</span><div><div className="meta-label">Degree</div><div className="meta-val">BS Computer Science</div></div></div>
               </div>
+              
               <div className="about-btns">
-                <button className="btn-p" onClick={openCV}>Download CV ↓</button>
-                <button className="btn-o" onClick={() => scrollToSection('contact')}>Contact Me</button>
+                <Magnetic strength={0.15}>
+                  <button className="btn-p" onClick={openCV}>Download CV ↓</button>
+                </Magnetic>
+                <Magnetic strength={0.15}>
+                  <button className="btn-o" onClick={() => scrollToSection('contact')}>Contact Me</button>
+                </Magnetic>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
-      {/* SERVICES */}
+      {/* SERVICES SECTION */}
       <section id="services" className={`sec ${activeSection === 'services' ? 'active-section' : ''}`}>
-        <div className="orb" style={{ width: '500px', height: '500px', background: 'radial-gradient(circle,rgba(139,92,246,.12),transparent 70%)', left: '-150px', bottom: 0, filter: 'blur(80px)' }}></div>
         <div className="container">
-          <div className="sec-head">
+          <motion.div 
+            className="sec-head"
+            variants={fadeInUp}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+          >
             <div className="stag" style={{ margin: '0 auto 20px', display: 'table' }}>✦ What I Do</div>
             <h2 className="syne">Services I <span className="gtext">Provide</span></h2>
             <p>Delivering end-to-end development solutions across web, mobile, and backend platforms.</p>
-          </div>
-          <div className="services-grid">
-            <div className="card service-card" style={{ '--sc': '#8b5cf6' }}>
-              <div className="service-num">01</div>
-              <div className="service-icon">🌐</div>
-              <h3>Web Development</h3>
-              <p>Modern, performant web applications built with React, Angular, and Next.js. SEO-optimized, fully responsive, and blazing fast.</p>
-            </div>
-            <div className="card service-card" style={{ '--sc': '#14b8a6' }}>
-              <div className="service-num">02</div>
-              <div className="service-icon">📱</div>
-              <h3>Mobile Development</h3>
-              <p>Cross-platform iOS & Android apps with React Native. Native-like performance, smooth animations, and great UX.</p>
-            </div>
-            <div className="card service-card" style={{ '--sc': '#f59e0b' }}>
-              <div className="service-num">03</div>
-              <div className="service-icon">⚙️</div>
-              <h3>Backend Development</h3>
-              <p>Scalable REST APIs and microservices using ASP.NET Core and C#. Secure, well-documented, and production-ready.</p>
-            </div>
-            <div className="card service-card" style={{ '--sc': '#ec4899' }}>
-              <div className="service-num">04</div>
-              <div className="service-icon">🗄️</div>
-              <h3>Database Design</h3>
-              <p>Efficient schema design and optimization for SQL Server, PostgreSQL, and MongoDB. Performance tuning and data modeling.</p>
-            </div>
-            <div className="card service-card" style={{ '--sc': '#3b82f6' }}>
-              <div className="service-num">05</div>
-              <div className="service-icon">☁️</div>
-              <h3>Cloud & DevOps</h3>
-              <p>Azure deployment, CI/CD pipelines, Docker containerization, and infrastructure management for reliable releases.</p>
-            </div>
-            <div className="card service-card" style={{ '--sc': '#10b981' }}>
-              <div className="service-num">06</div>
-              <div className="service-icon">🔍</div>
-              <h3>Code Review & Consulting</h3>
-              <p>Architecture reviews, performance audits, and technical consulting to elevate your team's code quality and best practices.</p>
-            </div>
+          </motion.div>
+          
+          <motion.div 
+            className="services-grid"
+            variants={staggerContainer(0.1, 0.1)}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: '-10%' }}
+          >
+            {[
+              { num: '01', icon: '🌐', title: 'Web Development', desc: 'Modern, performant web applications built with React, Angular, and Next.js. SEO-optimized, fully responsive, and blazing fast.', sc: '#8b5cf6' },
+              { num: '02', icon: '📱', title: 'Mobile Development', desc: 'Cross-platform iOS & Android apps with React Native. Native-like performance, smooth animations, and great UX.', sc: '#14b8a6' },
+              { num: '03', icon: '⚙️', title: 'Backend Development', desc: 'Scalable REST APIs and microservices using ASP.NET Core and C#. Secure, well-documented, and production-ready.', sc: '#f59e0b' },
+              { num: '04', icon: '🗄️', title: 'Database Design', desc: "Efficient schema design and optimization for SQL Server, PostgreSQL, and MongoDB. Performance tuning and data modeling.", sc: '#ec4899' },
+              { num: '05', icon: '☁️', title: 'Cloud & DevOps', desc: 'Azure deployment, CI/CD pipelines, Docker containerization, and infrastructure management for reliable releases.', sc: '#3b82f6' },
+              { num: '06', icon: '🔍', title: 'Code Review & Consulting', desc: "Architecture reviews, performance audits, and technical consulting to elevate your team's code quality and best practices.", sc: '#10b981' }
+            ].map((svc) => (
+              <motion.div key={svc.num} variants={fadeInUp}>
+                <TiltCard className="service-card" style={{ '--sc': svc.sc }}>
+                  <div className="service-num">{svc.num}</div>
+                  <div className="service-icon">{svc.icon}</div>
+                  <h3>{svc.title}</h3>
+                  <p>{svc.desc}</p>
+                </TiltCard>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* MARKETING SECTION */}
+      <section id="marketing" className={`sec ${activeSection === 'marketing' ? 'active-section' : ''}`}>
+        <div className="container">
+          <motion.div 
+            className="sec-head"
+            variants={fadeInUp}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+          >
+            <div className="stag" style={{ margin: '0 auto 20px', display: 'table' }}>✦ Marketing</div>
+            <h2 className="syne">Performance <span className="gtext">Marketing</span></h2>
+            <p>I combine data-driven strategies with creative ad designs to deliver high‑ROI campaigns on Google and Facebook.</p>
+          </motion.div>
+          
+          <motion.div 
+            className="services-grid"
+            variants={staggerContainer(0.1, 0.1)}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: '-10%' }}
+          >
+            {MARKETING_SERVICES.map((svc, i) => (
+              <motion.div key={svc.platform} variants={fadeInUp}>
+                <TiltCard className="service-card" style={{ '--sc': svc.color }}>
+                  <div className="service-num">{String(i+1).padStart(2, '0')}</div>
+                  <div className="service-icon">{svc.icon}</div>
+                  <h3>{svc.platform}</h3>
+                  <p>{svc.tagline}</p>
+                  <ul style={{ color: 'var(--m)', fontSize: '14px', marginTop: '12px', listStyleType: 'none', paddingLeft: 0 }}>
+                    {svc.features.map(f => (
+                      <li key={f.title} style={{ marginBottom: '6px', display: 'flex', gap: '8px' }}>
+                        <span>{f.icon}</span>
+                        <span><strong>{f.title}:</strong> {f.desc}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </TiltCard>
+              </motion.div>
+            ))}
+          </motion.div>
+          
+          <div className="gridbg" style={{ marginTop: '48px', padding: '36px', borderRadius: '24px', border: '1px solid var(--border)', background: 'var(--bg2)' }}>
+            <h3 className="syne" style={{ textAlign: 'center', marginBottom: '32px', fontSize: '22px', fontWeight: 700 }}>My Process</h3>
+            
+            <motion.div 
+              className="skills-grid" 
+              style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}
+              variants={staggerContainer(0.08, 0.1)}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true }}
+            >
+              {MARKETING_PROCESS.map(step => (
+                <motion.div key={step.step} variants={fadeInUp}>
+                  <TiltCard className="skill-card" style={{ height: '100%' }}>
+                    <div className="skill-top">
+                      <div className="skill-name" style={{ gap: '12px' }}>
+                        <span style={{ fontSize: '20px' }}>{step.icon}</span>
+                        <span>{step.step}. {step.title}</span>
+                      </div>
+                    </div>
+                    <p className="skill-foot" style={{ color: 'var(--m)', fontSize: '13px', lineHeight: 1.6, marginTop: '8px' }}>{step.desc}</p>
+                  </TiltCard>
+                </motion.div>
+              ))}
+            </motion.div>
           </div>
         </div>
       </section>
 
-{/* MARKETING */}
-<section id="marketing" className={`sec ${activeSection === 'marketing' ? 'active-section' : ''}`}>
-  <div className="orb" style={{ width: '500px', height: '500px', background: 'radial-gradient(circle,rgba(20,184,166,.12),transparent 70%)', right: '-150px', bottom: 0, filter: 'blur(80px)' }}></div>
-  <div className="container">
-    <div className="sec-head">
-      <div className="stag" style={{ margin: '0 auto 20px', display: 'table' }}>✦ Marketing</div>
-      <h2 className="syne">Performance <span className="gtext">Marketing</span></h2>
-      <p>I combine data-driven strategies with creative ad designs to deliver high‑ROI campaigns on Google and Facebook.</p>
-        <p>As a Performance Marketing Specialist, I craft tailored advertising solutions that boost brand visibility, drive qualified leads, and maximize return on ad spend across multiple platforms, including Google Ads, Facebook Ads, and emerging channels. My data‑first approach ensures continuous optimization and measurable results.</p>
-    </div>
-    <div className="services-grid">
-      {MARKETING_SERVICES.map((svc, i) => (
-        <div key={svc.platform} className="card service-card" style={{ '--sc': svc.color }}>
-          <div className="service-num">{String(i+1).padStart(2, '0')}</div>
-          <div className="service-icon">{svc.icon}</div>
-          <h3>{svc.platform}</h3>
-          <p>{svc.tagline}</p>
-          <ul style={{ color: 'var(--m)', fontSize: '14px', marginTop: '12px' }}>
-            {svc.features.map(f => (
-              <li key={f.title} style={{ marginBottom: '4px' }}>
-                <strong>{f.title}:</strong> {f.desc}
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
-    </div>
-    <div className="gridbg" style={{ marginTop: '48px' }}>
-      <h3 className="syne">My Process</h3>
-      <div className="skills-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
-        {MARKETING_PROCESS.map(step => (
-          <div key={step.step} className="card skill-card">
-            <div className="skill-top">
-              <div className="skill-name">{step.step} {step.title}</div>
-            </div>
-            <p className="skill-foot" style={{ color: 'var(--m)', fontSize: '14px' }}>{step.desc}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  </div>
-</section>
-
-      {/* SKILLS */}
+      {/* SKILLS SECTION */}
       <section id="skills" className={`sec altbg ${activeSection === 'skills' ? 'active-section' : ''}`}>
-        <div className="orb" style={{ width: '500px', height: '500px', background: 'radial-gradient(circle,rgba(20,184,166,.12),transparent 70%)', right: '-100px', top: '50%', filter: 'blur(80px)' }}></div>
         <div className="container">
-          <div className="sec-head">
+          <motion.div 
+            className="sec-head"
+            variants={fadeInUp}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+          >
             <div className="stag" style={{ margin: '0 auto 20px', display: 'table' }}>✦ My Skills</div>
             <h2 className="syne">Technical <span className="gtext">Expertise</span></h2>
             <p>A curated set of technologies I've mastered across frontend, backend, and mobile development.</p>
-          </div>
+          </motion.div>
+          
           <div className="filter-row">
             {['All', 'Frontend', 'Mobile', 'Backend', 'Language', 'Database', 'DevOps', 'Tools'].map((cat) => (
-              <button
-                key={cat}
-                className={`filt ${activeCat === cat ? 'active' : ''}`}
-                onClick={() => setActiveCat(cat)}
-              >
-                {cat}
-              </button>
+              <Magnetic key={cat} strength={0.2}>
+                <button
+                  className={`filt ${activeCat === cat ? 'active' : ''}`}
+                  onClick={() => setActiveCat(cat)}
+                >
+                  {cat}
+                </button>
+              </Magnetic>
             ))}
           </div>
-          <div className="skills-grid">
+          
+          {/* Dynamic grid key triggers entrance stagger on filter change */}
+          <motion.div 
+            key={activeCat}
+            className="skills-grid"
+            variants={staggerContainer(0.05, 0.05)}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+          >
             {filteredSkills.map((s, index) => (
-              <div key={s.n} className="card skill-card">
-                <div className="skill-top">
-                  <div className="skill-name">
-                    <div className="skill-dot" style={{ background: s.col, boxShadow: `0 0 8px ${s.col}80` }}></div>
-                    {s.n}
+              <motion.div key={s.n} variants={fadeInUp}>
+                <TiltCard className="skill-card">
+                  <div className="skill-top">
+                    <div className="skill-name">
+                      <div className="skill-dot" style={{ background: s.col, boxShadow: `0 0 8px ${s.col}80` }}></div>
+                      {s.n}
+                    </div>
+                    <span className="skill-pct">{s.l}%</span>
                   </div>
-                  <span className="skill-pct">{s.l}%</span>
-                </div>
-                <div className="skill-track">
-                  <div 
-                    className="skill-fill" 
-                    style={{ 
-                      '--w': `${s.l}%`, 
-                      background: `linear-gradient(90deg,#8b5cf6,${s.col})`, 
-                      animationDelay: `${index * 0.05}s` 
-                    }}
-                  ></div>
-                </div>
-                <div className="skill-foot"><span className="tag" style={{ fontSize: '11px' }}>{s.c}</span></div>
-              </div>
+                  
+                  <div className="skill-track">
+                    <motion.div 
+                      className="skill-fill" 
+                      initial={{ width: 0 }}
+                      whileInView={{ width: `${s.l}%` }}
+                      viewport={{ once: true }}
+                      transition={{ type: 'spring', stiffness: 75, damping: 15, delay: index * 0.03 }}
+                      style={{ 
+                        background: `linear-gradient(90deg,#8b5cf6,${s.col})`
+                      }}
+                    />
+                  </div>
+                  <div className="skill-foot"><span className="tag" style={{ fontSize: '11px' }}>{s.c}</span></div>
+                </TiltCard>
+              </motion.div>
             ))}
-          </div>
-          <div className="tech-cloud">
+          </motion.div>
+          
+          <motion.div 
+            className="tech-cloud"
+            variants={staggerContainer(0.05, 0.1)}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+          >
             {['React', 'Next.js', 'Angular', 'React Native', 'ASP.NET Core', 'TypeScript', 'C#', 'SQL Server', 'MongoDB', 'Docker', 'Azure', 'Git'].map((tech) => (
-              <div key={tech} className="tech-pill">{tech}</div>
+              <motion.div key={tech} variants={fadeInUp} className="tech-pill">{tech}</motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* PROJECTS */}
+      {/* PROJECTS SECTION */}
       <section id="projects" className={`sec ${activeSection === 'projects' ? 'active-section' : ''}`}>
-        <div className="orb" style={{ width: '500px', height: '500px', background: 'radial-gradient(circle,rgba(139,92,246,.12),transparent 70%)', left: '30%', top: 0, filter: 'blur(80px)' }}></div>
         <div className="container">
-          <div className="sec-head">
+          <motion.div 
+            className="sec-head"
+            variants={fadeInUp}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+          >
             <div className="stag" style={{ margin: '0 auto 20px', display: 'table' }}>✦ Portfolio</div>
             <h2 className="syne">Featured <span className="gtext">Projects</span></h2>
             <p>Real-world applications built with modern tech stacks — solving real business problems.</p>
-          </div>
-          <div className="projects-grid">
-            {PROJECTS.map((p) => (
-              <div key={p.t} className="card proj-card">
-                <div className="proj-top">
-                  <div className="proj-icon">{p.i}</div>
-                  <div className="proj-links">
-                    <button className="proj-link">GitHub</button>
-                    {p.live && <a href={p.live} target="_blank" rel="noreferrer" className="proj-link">Live Demo →</a>}
-                    {p.github && <a href={p.github} target="_blank" rel="noreferrer" className="proj-link">GitHub</a>}
+          </motion.div>
+          
+          <motion.div 
+            className="projects-grid"
+            variants={staggerContainer(0.12, 0.1)}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: '-10%' }}
+          >
+            {PROJECTS.map((p, i) => (
+              <motion.div key={p.t} variants={fadeInUp}>
+                <TiltCard className="proj-card">
+                  <div className="proj-top">
+                    <div className="proj-icon">{p.i}</div>
+                    <div className="proj-links">
+                      {p.github && (
+                        <a href={p.github} target="_blank" rel="noreferrer" className="proj-link">GitHub</a>
+                      )}
+                      {p.live && (
+                        <a href={p.live} target="_blank" rel="noreferrer" className="proj-link">Live Demo →</a>
+                      )}
+                    </div>
                   </div>
-                </div>
-                <div className="proj-bar" style={{ background: `linear-gradient(90deg,${p.col}80,${p.col}10)` }}></div>
-                <h3 style={{ marginTop: '14px' }}>{p.t}</h3>
-                <p>{p.d}</p>
-                <div className="proj-tags">
-                  {p.tech.map((t) => (
-                    <span key={t} className="tag" style={{ borderColor: `${p.col}30`, color: `${p.col}bb` }}>{t}</span>
-                  ))}
-                </div>
-              </div>
+                  <div className="proj-bar" style={{ background: `linear-gradient(90deg,${p.col}80,${p.col}10)` }}></div>
+                  <h3 style={{ marginTop: '14px' }}>{p.t}</h3>
+                  <p>{p.d}</p>
+                  <div className="proj-tags">
+                    {p.tech.map((t) => (
+                      <span key={t} className="tag" style={{ borderColor: `${p.col}30`, color: `${p.col}bb` }}>{t}</span>
+                    ))}
+                  </div>
+                </TiltCard>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* EXPERIENCE */}
+      {/* EXPERIENCE SECTION */}
       <section id="experience" className={`sec altbg ${activeSection === 'experience' ? 'active-section' : ''}`}>
-        <div className="orb" style={{ width: '400px', height: '400px', background: 'radial-gradient(circle,rgba(139,92,246,.12),transparent 70%)', left: '-100px', top: '20%', filter: 'blur(80px)' }}></div>
         <div className="container">
-          <div className="sec-head">
+          <motion.div 
+            className="sec-head"
+            variants={fadeInUp}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+          >
             <div className="stag" style={{ margin: '0 auto 20px', display: 'table' }}>✦ Career</div>
             <h2 className="syne">Work <span className="gtext">Experience</span></h2>
-          </div>
-          <div className="exp-wrap">
+          </motion.div>
+          
+          <motion.div 
+            className="exp-wrap"
+            variants={staggerContainer(0.15, 0.1)}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: '-10%' }}
+          >
             {EXP.map((e, index) => (
-              <div key={`${e.co}-${e.r}`} className="exp-item">
+              <motion.div key={`${e.co}-${e.r}`} variants={fadeInUp} className="exp-item">
                 <div className="exp-spine">
                   <div className="exp-dot"></div>
                   {index < EXP.length - 1 && <div className="exp-line"></div>}
                 </div>
-                <div className="card exp-card" style={{ padding: '26px' }}>
+                
+                <TiltCard className="exp-card" style={{ padding: '26px' }}>
                   <div className="exp-head">
                     <div>
                       <div className="exp-role">{e.r}</div>
@@ -567,149 +733,256 @@ function App() {
                       <span key={t} className="tag">{t}</span>
                     ))}
                   </div>
-                </div>
-              </div>
+                </TiltCard>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* TESTIMONIALS */}
+      {/* TESTIMONIALS WITH SLIDING CAROUSEL */}
       <section id="testimonials" className={`sec ${activeSection === 'testimonials' ? 'active-section' : ''}`}>
-        <div className="orb" style={{ width: '500px', height: '500px', background: 'radial-gradient(circle,rgba(20,184,166,.1),transparent 70%)', right: 0, top: 0, filter: 'blur(80px)' }}></div>
         <div className="container">
-          <div className="sec-head">
+          <motion.div 
+            className="sec-head"
+            variants={fadeInUp}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+          >
             <div className="stag" style={{ margin: '0 auto 20px', display: 'table' }}>✦ Testimonials</div>
             <h2 className="syne">What Clients <span className="gtext">Say</span></h2>
-          </div>
+          </motion.div>
+          
           <div className="test-wrap">
-            <div className="test-card">
-              <div className="test-quote">"</div>
-              <p className="test-text">{currentTestimonial.t}</p>
-              <div className="test-author">
-                <div className="test-av" style={{ background: `linear-gradient(135deg,${currentTestimonial.col},${currentTestimonial.col}80)`, color: '#fff' }}>
-                  {currentTestimonial.av}
-                </div>
-                <div>
-                  <div className="test-name">{currentTestimonial.n}</div>
-                  <div className="test-role">{currentTestimonial.r}</div>
-                </div>
-                <div className="test-stars">★★★★★</div>
-              </div>
+            <div style={{ position: 'relative', minHeight: 280, overflow: 'hidden' }}>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={testIndex}
+                  initial={{ opacity: 0, x: 50, scale: 0.98 }}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  exit={{ opacity: 0, x: -50, scale: 0.98 }}
+                  transition={{ duration: 0.5, ease: EASE_PREMIUM }}
+                  className="test-card"
+                  style={{ position: 'relative', width: '100%' }}
+                >
+                  <motion.div 
+                    className="test-quote"
+                    animate={{ y: [0, -5, 0] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                  >
+                    "
+                  </motion.div>
+                  <p className="test-text">{currentTestimonial.t}</p>
+                  
+                  <div className="test-author">
+                    <div className="test-av" style={{ background: `linear-gradient(135deg,${currentTestimonial.col},${currentTestimonial.col}80)`, color: '#fff' }}>
+                      {currentTestimonial.av}
+                    </div>
+                    <div>
+                      <div className="test-name">{currentTestimonial.n}</div>
+                      <div className="test-role">{currentTestimonial.r}</div>
+                    </div>
+                    <div className="test-stars">★★★★★</div>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
             </div>
+            
             <div className="test-dots">
               {TESTS.map((_, i) => (
-                <button
+                <motion.button
                   key={i}
                   className={`dot ${i === testIndex ? 'active' : ''}`}
-                  style={{ width: i === testIndex ? '28px' : '8px' }}
+                  animate={{ width: i === testIndex ? 28 : 8 }}
+                  transition={{ type: 'spring', stiffness: 350, damping: 30 }}
                   onClick={() => setTestIndex(i)}
-                ></button>
+                  aria-label={`Go to testimonial ${i + 1}`}
+                />
               ))}
             </div>
+            
             <div className="test-navs">
-              <button className="test-nav" onClick={() => setTestIndex((prev) => (prev - 1 + TESTS.length) % TESTS.length)}>‹</button>
-              <button className="test-nav" onClick={() => setTestIndex((prev) => (prev + 1) % TESTS.length)}>›</button>
+              <Magnetic strength={0.3}>
+                <button className="test-nav" onClick={() => setTestIndex((prev) => (prev - 1 + TESTS.length) % TESTS.length)}>‹</button>
+              </Magnetic>
+              <Magnetic strength={0.3}>
+                <button className="test-nav" onClick={() => setTestIndex((prev) => (prev + 1) % TESTS.length)}>›</button>
+              </Magnetic>
             </div>
           </div>
         </div>
       </section>
 
-      {/* CONTACT */}
+      {/* CONTACT SECTION */}
       <section id="contact" className={`sec altbg ${activeSection === 'contact' ? 'active-section' : ''}`}>
-        <div className="orb" style={{ width: '400px', height: '400px', background: 'radial-gradient(circle,rgba(20,184,166,.1),transparent 70%)', left: 0, top: '50%', filter: 'blur(80px)' }}></div>
-        <div className="orb" style={{ width: '400px', height: '400px', background: 'radial-gradient(circle,rgba(139,92,246,.1),transparent 70%)', right: 0, bottom: 0, filter: 'blur(80px)' }}></div>
         <div className="container">
-          <div className="sec-head">
+          <motion.div 
+            className="sec-head"
+            variants={fadeInUp}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+          >
             <div className="stag" style={{ margin: '0 auto 20px', display: 'table' }}>✦ Contact</div>
             <h2 className="syne">Let's Work <span className="gtext">Together</span></h2>
             <p>Have a project in mind? Let's discuss how I can help bring your ideas to life.</p>
-          </div>
+          </motion.div>
+          
           <div className="contact-grid">
-            <div>
+            <motion.div 
+              variants={staggerContainer(0.08, 0.1)}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true }}
+            >
               <div className="contact-info">
-                <div className="contact-item" style={{ '--hover-border': 'rgba(139,92,246,.3)' }}>
-                  <div className="c-ico" style={{ background: 'rgba(139,92,246,.12)', border: '1px solid rgba(139,92,246,.25)' }}>📧</div>
-                  <div><div className="c-label">Email</div><div className="c-val">sshaharyar229@gmail.com</div></div>
-                </div>
-                <div className="contact-item" style={{ '--hover-border': 'rgba(20,184,166,.3)' }}>
-                  <div className="c-ico" style={{ background: 'rgba(20,184,166,.1)', border: '1px solid rgba(20,184,166,.2)' }}>📱</div>
-                  <div><div className="c-label">Phone</div><div className="c-val">+92 314 0069007</div></div>
-                </div>
-                <div className="contact-item" style={{ '--hover-border': 'rgba(245,158,11,.3)' }}>
-                  <div className="c-ico" style={{ background: 'rgba(245,158,11,.1)', border: '1px solid rgba(245,158,11,.2)' }}>📍</div>
-                  <div><div className="c-label">Location</div><div className="c-val">Kamalia, Pakistan</div></div>
-                </div>
-                <div className="contact-item" style={{ '--hover-border': 'rgba(236,72,153,.3)' }}>
-                  <div className="c-ico" style={{ background: 'rgba(236,72,153,.1)', border: '1px solid rgba(236,72,153,.2)' }}>💬</div>
-                  <div><div className="c-label">Response Time</div><div className="c-val" style={{ color: '#14b8a6' }}>Within 24 hours</div></div>
-                </div>
+                {[
+                  { icon: '📧', label: 'Email', val: 'sshaharyar229@gmail.com', border: 'rgba(139,92,246,.3)', icoBg: 'rgba(139,92,246,.12)', icoBrd: 'rgba(139,92,246,.25)' },
+                  { icon: '📱', label: 'Phone', val: '+92 314 0069007', border: 'rgba(20,184,166,.3)', icoBg: 'rgba(20,184,166,.1)', icoBrd: 'rgba(20,184,166,.2)' },
+                  { icon: '📍', label: 'Location', val: 'Kamalia, Pakistan', border: 'rgba(245,158,11,.3)', icoBg: 'rgba(245,158,11,.1)', icoBrd: 'rgba(245,158,11,.2)' },
+                  { icon: '💬', label: 'Response Time', val: 'Within 24 hours', border: 'rgba(236,72,153,.3)', icoBg: 'rgba(236,72,153,.1)', icoBrd: 'rgba(236,72,153,.2)', style: { color: '#14b8a6' } }
+                ].map((item) => (
+                  <motion.div key={item.label} variants={fadeInLeft}>
+                    <TiltCard className="contact-item" style={{ '--hover-border': item.border, display: 'flex', width: '100%' }}>
+                      <div className="c-ico" style={{ background: item.icoBg, border: `1px solid ${item.icoBrd}` }}>{item.icon}</div>
+                      <div>
+                        <div className="c-label">{item.label}</div>
+                        <div className="c-val" style={item.style || {}}>{item.val}</div>
+                      </div>
+                    </TiltCard>
+                  </motion.div>
+                ))}
               </div>
-              <div className="socials">
-                <a className="soc" data-tooltip="LinkedIn" style={{ '--hover-border': 'rgba(10,102,194,.5)', '--hover-color': '#0a66c2' }} href="https://www.linkedin.com/in/shaharyar-sahil-442b7b184/?skipRedirect=true" target="_blank" rel="noreferrer"><i className="fa-brands fa-linkedin-in"></i></a>
-                <a className="soc" data-tooltip="GitHub" style={{ '--hover-border': 'rgba(255,255,255,.3)', '--hover-color': '#fff' }} href="https://github.com/Shaharyar123-art" target="_blank" rel="noreferrer"><i className="fa-brands fa-github"></i></a>
-                <a className="soc" data-tooltip="Twitter/X" style={{ '--hover-border': 'rgba(29,161,242,.5)', '--hover-color': '#1da1f2' }} href="https://x.com/Shaharyar7008" target="_blank" rel="noreferrer"><i className="fa-brands fa-x-twitter"></i></a>
-                <a className="soc" data-tooltip="WhatsApp" style={{ '--hover-border': 'rgba(37,211,102,.5)', '--hover-color': '#25d366' }} href="https://wa.me/923041137877" target="_blank" rel="noreferrer"><i className="fa-brands fa-whatsapp"></i></a>
-              </div>
-            </div>
-            <div className="card form-card">
-              {!formSubmitted ? (
-                <div id="form-area">
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Your Name *</label>
+              
+              <motion.div 
+                className="socials"
+                variants={staggerContainer(0.08, 0.1)}
+              >
+                {[
+                  { name: 'LinkedIn', icon: 'fa-linkedin-in', link: 'https://www.linkedin.com/in/shaharyar-sahil-442b7b184/?skipRedirect=true', border: 'rgba(10,102,194,.5)', color: '#0a66c2' },
+                  { name: 'GitHub', icon: 'fa-github', link: 'https://github.com/Shaharyar123-art', border: 'rgba(255,255,255,.3)', color: '#fff' },
+                  { name: 'Twitter/X', icon: 'fa-x-twitter', link: 'https://x.com/Shaharyar7008', border: 'rgba(29,161,242,.5)', color: '#1da1f2' },
+                  { name: 'WhatsApp', icon: 'fa-whatsapp', link: 'https://wa.me/923041137877', border: 'rgba(37,211,102,.5)', color: '#25d366' }
+                ].map((soc) => (
+                  <Magnetic key={soc.name} strength={0.3}>
+                    <motion.a 
+                      variants={fadeInUp} 
+                      className="soc" 
+                      data-tooltip={soc.name} 
+                      style={{ '--hover-border': soc.border, '--hover-color': soc.color }} 
+                      href={soc.link} 
+                      target="_blank" 
+                      rel="noreferrer"
+                    >
+                      <i className={`fa-brands ${soc.icon}`}></i>
+                    </motion.a>
+                  </Magnetic>
+                ))}
+              </motion.div>
+            </motion.div>
+            
+            <motion.div 
+              variants={fadeInRight}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true }}
+              className="card form-card"
+              style={{ overflow: 'hidden' }}
+            >
+              <AnimatePresence mode="wait">
+                {!formSubmitted ? (
+                  <motion.div 
+                    key="form-area"
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -15 }}
+                    transition={{ duration: 0.3 }}
+                    id="form-area"
+                  >
+                    <div className="form-row">
+                      <div className={`form-group ${formActive.name || formData.name ? 'focused filled' : ''}`}>
+                        <label>Your Name *</label>
+                        <input 
+                          className="inp" 
+                          id="f-name" 
+                          type="text" 
+                          placeholder="Muhammad Ali" 
+                          value={formData.name}
+                          onFocus={() => setFormActive(prev => ({ ...prev, name: true }))}
+                          onBlur={() => setFormActive(prev => ({ ...prev, name: false }))}
+                          onChange={handleInputChange}
+                        />
+                      </div>
+                      <div className={`form-group ${formActive.email || formData.email ? 'focused filled' : ''}`}>
+                        <label>Email Address *</label>
+                        <input 
+                          className="inp" 
+                          id="f-email" 
+                          type="email" 
+                          placeholder="you@email.com" 
+                          value={formData.email}
+                          onFocus={() => setFormActive(prev => ({ ...prev, email: true }))}
+                          onBlur={() => setFormActive(prev => ({ ...prev, email: false }))}
+                          onChange={handleInputChange}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className={`form-group ${formActive.subject || formData.subject ? 'focused filled' : ''}`}>
+                      <label>Subject</label>
                       <input 
                         className="inp" 
-                        id="f-name" 
+                        id="f-subject" 
                         type="text" 
-                        placeholder="Muhammad Ali" 
-                        value={formData.name}
+                        placeholder="Project Discussion" 
+                        value={formData.subject}
+                        onFocus={() => setFormActive(prev => ({ ...prev, subject: true }))}
+                        onBlur={() => setFormActive(prev => ({ ...prev, subject: false }))}
                         onChange={handleInputChange}
                       />
                     </div>
-                    <div className="form-group">
-                      <label>Email Address *</label>
-                      <input 
+                    
+                    <div className={`form-group ${formActive.message || formData.message ? 'focused filled' : ''}`}>
+                      <label>Message *</label>
+                      <textarea 
                         className="inp" 
-                        id="f-email" 
-                        type="email" 
-                        placeholder="you@email.com" 
-                        value={formData.email}
+                        id="f-msg" 
+                        placeholder="Tell me about your project, budget, and timeline..."
+                        value={formData.message}
+                        onFocus={() => setFormActive(prev => ({ ...prev, message: true }))}
+                        onBlur={() => setFormActive(prev => ({ ...prev, message: false }))}
                         onChange={handleInputChange}
-                      />
+                      ></textarea>
                     </div>
-                  </div>
-                  <div className="form-group">
-                    <label>Subject</label>
-                    <input 
-                      className="inp" 
-                      id="f-subject" 
-                      type="text" 
-                      placeholder="Project Discussion" 
-                      value={formData.subject}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Message *</label>
-                    <textarea 
-                      className="inp" 
-                      id="f-msg" 
-                      placeholder="Tell me about your project, budget, and timeline..."
-                      value={formData.message}
-                      onChange={handleInputChange}
-                    ></textarea>
-                  </div>
-                  <button className="btn-p submit-btn" onClick={handleSubmit}>Send Message ✉️</button>
-                </div>
-              ) : (
-                <div id="success-area" className="success-state">
-                  <div className="success-emoji">✅</div>
-                  <h3 className="syne" style={{ fontSize: '22px', fontWeight: 700, marginBottom: '10px' }}>Message Sent!</h3>
-                  <p style={{ color: 'var(--m)', lineHeight: 1.7 }}>Thank you for reaching out. I'll get back to you within 24 hours.</p>
-                </div>
-              )}
-            </div>
+                    
+                    <Magnetic strength={0.1}>
+                      <button className="btn-p submit-btn" onClick={handleSubmit}>Send Message ✉️</button>
+                    </Magnetic>
+                  </motion.div>
+                ) : (
+                  <motion.div 
+                    key="success-area" 
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: 'spring', stiffness: 120, damping: 15 }}
+                    id="success-area" 
+                    className="success-state"
+                  >
+                    <motion.div 
+                      initial={{ scale: 0 }}
+                      animate={{ scale: [0, 1.25, 1] }}
+                      transition={{ duration: 0.5, ease: 'easeOut', delay: 0.15 }}
+                      className="success-emoji"
+                    >
+                      ✅
+                    </motion.div>
+                    <h3 className="syne" style={{ fontSize: '22px', fontWeight: 700, marginBottom: '10px' }}>Message Sent!</h3>
+                    <p style={{ color: 'var(--m)', lineHeight: 1.7 }}>Thank you for reaching out. I'll get back to you within 24 hours.</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -721,10 +994,14 @@ function App() {
             <span className="logo syne" style={{ fontSize: '20px', fontWeight: 800, cursor: 'pointer' }} onClick={() => scrollToSection('home')}>&lt;DevBySahil/&gt;</span>
             <p className="footer-tagline">Building exceptional digital experiences with cutting-edge technologies.</p>
             <div className="footer-socials">
-              <a className="soc" data-tooltip="LinkedIn" href="https://www.linkedin.com/in/shaharyar-sahil-442b7b184/?skipRedirect=true" target="_blank" rel="noreferrer" style={{ '--hover-border': 'rgba(10,102,194,.5)', '--hover-color': '#0a66c2' }}><i className="fa-brands fa-linkedin-in"></i></a>
-              <a className="soc" data-tooltip="GitHub" href="https://github.com/Shaharyar123-art" target="_blank" rel="noreferrer" style={{ '--hover-border': 'rgba(255,255,255,.3)', '--hover-color': '#fff' }}><i className="fa-brands fa-github"></i></a>
-              <a className="soc" data-tooltip="Twitter/X" href="https://x.com/Shaharyar7008" target="_blank" rel="noreferrer" style={{ '--hover-border': 'rgba(29,161,242,.5)', '--hover-color': '#1da1f2' }}><i className="fa-brands fa-x-twitter"></i></a>
-              <a className="soc" data-tooltip="WhatsApp" href="https://wa.me/923041137877" target="_blank" rel="noreferrer" style={{ '--hover-border': 'rgba(37,211,102,.5)', '--hover-color': '#25d366' }}><i className="fa-brands fa-whatsapp"></i></a>
+              {[
+                { name: 'LinkedIn', icon: 'fa-linkedin-in', link: 'https://www.linkedin.com/in/shaharyar-sahil-442b7b184/?skipRedirect=true', border: 'rgba(10,102,194,.5)', color: '#0a66c2' },
+                { name: 'GitHub', icon: 'fa-github', link: 'https://github.com/Shaharyar123-art', border: 'rgba(255,255,255,.3)', color: '#fff' },
+                { name: 'Twitter/X', icon: 'fa-x-twitter', link: 'https://x.com/Shaharyar7008', border: 'rgba(29,161,242,.5)', color: '#1da1f2' },
+                { name: 'WhatsApp', icon: 'fa-whatsapp', link: 'https://wa.me/923041137877', border: 'rgba(37,211,102,.5)', color: '#25d366' }
+              ].map(soc => (
+                <a key={soc.name} className="soc" data-tooltip={soc.name} href={soc.link} target="_blank" rel="noreferrer" style={{ '--hover-border': soc.border, '--hover-color': soc.color }}><i className={`fa-brands ${soc.icon}`}></i></a>
+              ))}
             </div>
           </div>
           <div className="footer-col">
@@ -755,13 +1032,20 @@ function App() {
         </div>
       </footer>
 
-      {/* Back to Top */}
-      <button 
+      {/* BACK TO TOP WITH SPRING MOTION */}
+      <motion.button 
         className={`btt ${showBackToTop ? 'visible' : ''}`} 
         onClick={() => scrollToSection('home')}
+        initial={{ opacity: 0, scale: 0.5 }}
+        animate={{ 
+          opacity: showBackToTop ? 1 : 0, 
+          scale: showBackToTop ? 1 : 0.5,
+          y: showBackToTop ? 0 : 20
+        }}
+        transition={{ type: 'spring', stiffness: 260, damping: 20 }}
       >
         ↑
-      </button>
+      </motion.button>
 
       {/* Floating Hire Me (Mobile Only) */}
       <button className="btn-p hire-float" onClick={() => scrollToSection('contact')} aria-label="Hire Me">

@@ -6,6 +6,7 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 70px;
 }
 
 body {
@@ -13,11 +14,26 @@ body {
   background: var(--bg);
   color: var(--w);
   overflow-x: hidden;
+  position: relative;
   transition: background 0.6s cubic-bezier(0.4, 0, 0.2, 1), color 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Premium Noise overlay */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  opacity: 0.022;
+  pointer-events: none;
+  z-index: 9999;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
 ::-webkit-scrollbar {
-  width: 3px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -100,14 +116,15 @@ body {
   font-weight: 500;
 }
 
-/* Orbs */
+/* Orbs with slow multi-axis floating animations */
 .orb {
   position: absolute;
   border-radius: 50%;
   pointer-events: none;
   filter: blur(80px);
-  opacity: 0.6;
+  opacity: 0.5;
   transition: background 0.6s ease, opacity 0.6s ease;
+  will-change: transform;
 }
 
 .orb1 {
@@ -116,6 +133,7 @@ body {
   background: radial-gradient(circle, rgba(139, 92, 246, 0.2), transparent 70%);
   top: -200px;
   left: -200px;
+  animation: floatOrb1 25s ease-in-out infinite;
 }
 
 .orb2 {
@@ -124,6 +142,7 @@ body {
   background: radial-gradient(circle, rgba(20, 184, 166, 0.15), transparent 70%);
   top: 10%;
   right: -100px;
+  animation: floatOrb2 30s ease-in-out infinite;
 }
 
 .orb3 {
@@ -132,18 +151,39 @@ body {
   background: radial-gradient(circle, rgba(139, 92, 246, 0.15), transparent 70%);
   bottom: 0;
   right: 30%;
+  animation: floatOrb1 28s ease-in-out infinite alternate;
 }
 
-/* Grid bg */
+@keyframes floatOrb1 {
+  0% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.05); }
+  66% { transform: translate(-20px, 30px) scale(0.95); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+
+@keyframes floatOrb2 {
+  0% { transform: translate(0px, 0px) scale(1); }
+  50% { transform: translate(-40px, 40px) scale(1.1); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+
+/* Grid bg with panning animation */
 .gridbg::before {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(rgba(139, 92, 246, 0.12) 1px, transparent 1px);
+  background-image: radial-gradient(rgba(139, 92, 246, 0.1) 1px, transparent 1px);
   background-size: 32px 32px;
   pointer-events: none;
   z-index: 0;
   transition: opacity 0.6s ease;
+  animation: panGrid 45s linear infinite;
+  will-change: background-position;
+}
+
+@keyframes panGrid {
+  from { background-position: 0 0; }
+  to { background-position: 32px 32px; }
 }
 
 /* Navbar */
@@ -281,7 +321,7 @@ nav {
   border: 1px solid var(--border);
   border-radius: 20px;
   backdrop-filter: blur(10px);
-  transition: background 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+  transition: background 0.6s cubic-bezier(0.22, 1, 0.36, 1), 
               border-color 0.4s ease, 
               transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
               box-shadow 0.4s ease;
@@ -319,11 +359,11 @@ nav {
 }
 
 @keyframes fadeUp {
-  from {
+  0% {
     opacity: 0;
-    transform: translateY(28px);
+    transform: translateY(30px);
   }
-  to {
+  100% {
     opacity: 1;
     transform: translateY(0);
   }
@@ -383,12 +423,41 @@ nav {
   100% { transform: scale(1.6); opacity: 0; }
 }
 
+/* Scroll Reveal Classes */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform, opacity;
+}
+
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-30px);
+  transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reveal-left.active {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Staggered Delays for Lists */
+.stagger-item {
+  transition-delay: calc(var(--i) * 0.1s);
+}
+
 .float {
   animation: float 4s ease-in-out infinite;
 }
 
 .fadeUp {
-  animation: fadeUp 0.7s ease both;
+  animation: fadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .d1 {
@@ -413,6 +482,10 @@ nav {
   display: flex;
   align-items: center;
   padding-top: 70px;
+}
+
+.hero-grid > * {
+  animation: fadeUp 1s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .hero-grid {
@@ -823,7 +896,7 @@ nav {
 .skill-fill {
   height: 100%;
   border-radius: 5px;
-  animation: progressBar 1.4s ease both;
+  transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .skill-foot {
@@ -1372,20 +1445,40 @@ nav {
 }
 
 .form-group {
-  margin-bottom: 16px;
+  position: relative;
+  margin-bottom: 24px;
 }
 
 .form-group label {
-  display: block;
-  font-size: 13px;
-  color: var(--m);
-  margin-bottom: 7px;
+  position: absolute;
+  left: 16px;
+  top: 14px;
+  font-size: 14px;
+  color: var(--d);
   font-weight: 500;
+  pointer-events: none;
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  background: transparent;
+  margin: 0;
+}
+
+.form-group.focused label,
+.form-group.filled label {
+  top: -10px;
+  left: 12px;
+  font-size: 11px;
+  color: var(--v);
+  background: var(--card); /* Blocks out the border behind the label */
+  padding: 0 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  z-index: 10;
 }
 
 .inp {
-  width: 100%; /* Keep width */
-  background: var(--bg2); /* Lighter background for light mode */
+  width: 100%;
+  background: var(--bg2);
   border: 1px solid rgba(139, 92, 246, 0.18);
   color: var(--w);
   padding: 13px 16px;
@@ -1393,16 +1486,23 @@ nav {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 14px;
   outline: none;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
 }
 
 .inp:focus {
   border-color: var(--v);
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.14), inset 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .inp::placeholder {
-  color: #4a5568;
+  color: transparent; /* Hidden by default to let floating labels act as placeholder */
+  transition: color 0.3s;
+}
+
+.form-group.focused .inp::placeholder {
+  color: #4a5568; /* Visible when focused */
 }
 
 textarea.inp {
@@ -1463,6 +1563,18 @@ footer {
 .footer-socials {
   display: flex;
   gap: 10px;
+}
+
+.footer-socials .soc {
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  color: var(--v);
+}
+
+.footer-socials .soc:hover {
+  background: var(--v);
+  color: #fff;
+  transform: translateY(-3px);
 }
 
 .footer-col h4 {
