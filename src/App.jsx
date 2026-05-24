@@ -349,7 +349,6 @@ function App() {
             <motion.div 
               variants={fadeInRight}
               className="avatar-wrap"
-              style={{ display: 'block' }}
             >
               <div className="avatar-ring">
                 <div className="orbit"></div>
@@ -405,7 +404,7 @@ function App() {
             whileInView="show"
             viewport={{ once: true, margin: '-20%' }}
           >
-            <motion.div variants={fadeInLeft} style={{ position: 'relative' }}>
+            <motion.div variants={fadeInLeft}>
               <div className="about-img">👨‍💻</div>
               <motion.div 
                 className="about-card-stat"

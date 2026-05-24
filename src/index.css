@@ -590,6 +590,7 @@ nav {
   width: 360px;
   height: 360px;
   flex-shrink: 0;
+  display: 'block'
 }
 
 .avatar-ring {
@@ -1969,6 +1970,12 @@ footer {
 }
 
 @media(max-width: 600px) {
+  .about-card-stat {
+    display: none;
+  }
+  .about-img {
+  height: 100%;
+}
   .services-grid {
     grid-template-columns: 1fr;
   }
@@ -2006,6 +2013,7 @@ footer {
   }
   .hero-stats {
     gap: 24px;
+    
   }
   /* Floating "Hire Me" positioned above WhatsApp */
   .hire-float {
